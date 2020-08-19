@@ -1,0 +1,181 @@
+Задание 1:
+---------------------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.18362.1016]
+(c) Корпорация Майкрософт (Microsoft Corporation), 2019. Все права защищены.
+
+C:\Users\111>ssh anastazia@192.168.1.7
+anastazia@192.168.1.7's password:
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.15.0-45-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+Может быть обновлён 391 пакет.
+333 обновления касаются безопасности системы.
+
+Last login: Tue Aug 11 21:31:54 2020 from 192.168.1.3
+anastazia@anastazia-VirtualBox:~$ systemctl status mysql
+● mysql.service - MySQL Community Server
+   Loaded: loaded (/lib/systemd/system/mysql.service; enabled; vendor preset: enabled)
+   Active: active (running) since Ср 2020-08-12 00:44:52 +04; 5 days ago
+  Process: 885 ExecStartPost=/usr/share/mysql/mysql-systemd-start post (code=exited, status=0/SUCCESS)
+  Process: 862 ExecStartPre=/usr/share/mysql/mysql-systemd-start pre (code=exited, status=0/SUCCESS)
+ Main PID: 884 (mysqld)
+    Tasks: 28
+   Memory: 141.0M
+      CPU: 1min 16.426s
+   CGroup: /system.slice/mysql.service
+           └─884 /usr/sbin/mysqld
+
+авг 12 00:44:27 anastazia-VirtualBox systemd[1]: Starting MySQL Community Server...
+авг 12 00:44:52 anastazia-VirtualBox systemd[1]: Started MySQL Community Server.
+
+anastazia@anastazia-VirtualBox:~$ nano .my.cnf
+anastazia@anastazia-VirtualBox:~$ ls -a
+.              examples.desktop  .nano                        .vboxclient-seamless.pid  Загрузки
+..             .gconf            .profile                     .viminfo                  Изображения
+.bash_history  .gnupg            sudo                         .Xauthority               Музыка
+.bash_logout   .ICEauthority     .sudo_as_admin_successful    .xsession-errors          Общедоступные
+.bashrc        .local            .vboxclient-clipboard.pid    .xsession-errors.old      Рабочий стол
+.cache         .my.cnf           .vboxclient-display.pid      Видео                     Шаблоны
+.config        .mysql_history    .vboxclient-draganddrop.pid  Документы
+anastazia@anastazia-VirtualBox:~$ cat .my.cnf
+[mysql]
+user=root
+password=17190591
+
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+
+Задание 2:
+--------------------------------------------------------------------------------------------------------
+
+mysql> CREATE DATABASE example;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| example            |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.09 sec)
+
+mysql> SHOW TABLES;
+ERROR 1046 (3D000): No database selected
+mysql> USE example
+Database changed
+mysql> SHOW TABLES;
+Empty set (0.03 sec)
+
+mysql> CREATE TABLE users (k INT);
+Query OK, 0 rows affected (0.15 sec)
+
+mysql> SHOW TABLES;
++-------------------+
+| Tables_in_example |
++-------------------+
+| users             |
++-------------------+
+1 row in set (0.00 sec)
+
+mysql> DESCRIBE users;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| k     | int(11) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+1 row in set (1.23 sec)
+
+
+Задание 3:
+--------------------------------------------------------------------------------------------------------
+
+anastazia@anastazia-VirtualBox:~$ mysqldump -u root -p example > sample.sql
+Enter password:
+anastazia@anastazia-VirtualBox:~$ ls -a
+.              .config           .my.cnf         sudo                         .viminfo              Загрузки
+..             examples.desktop  .mysql_history  .sudo_as_admin_successful    .Xauthority           Изображения
+.bash_history  .gconf            mysql.sql       .vboxclient-clipboard.pid    .xsession-errors      Музыка
+.bash_logout   .gnupg            .nano           .vboxclient-display.pid      .xsession-errors.old  Общедоступные
+.bashrc        .ICEauthority     .profile        .vboxclient-draganddrop.pid  Видео                 Рабочий стол
+.cache         .local            sample.sql      .vboxclient-seamless.pid     Документы             Шаблоны
+
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 16
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE sample;
+Query OK, 1 row affected (0.04 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| example            |
+| mysql              |
+| performance_schema |
+| sample             |
+| sys                |
++--------------------+
+6 rows in set (0.15 sec)
+
+mysql> exit
+Bye
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p sample < sample.sql
+Enter password:
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 18
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE sample
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++------------------+
+| Tables_in_sample |
++------------------+
+| users            |
++------------------+
+1 row in set (0.01 sec)
