@@ -1,0 +1,168 @@
+Задание 1:
+-----------------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.18362.1016]
+(c) Корпорация Майкрософт (Microsoft Corporation), 2019. Все права защищены.
+
+C:\Users\111>ssh anastazia@192.168.1.7
+anastazia@192.168.1.7's password:
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.15.0-45-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+Могут быть обновлены 389 пакетов.
+334 обновления касаются безопасности системы.
+
+Last login: Tue Aug 18 14:55:29 2020 from 192.168.1.3
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 19
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE vk;
+Query OK, 1 row affected (0.08 sec)
+
+mysql> USE vk;
+Database changed
+mysql> CREATE TABLE users (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
+    ->   first_name VARCHAR(100) NOT NULL COMMENT "Имя пользователя",
+    -> ения строки"
+) COMMENT "Пользовате  last_name VARCHAR(100) NOT NULL COMMENT "Фамилия пользователя",
+    ->   email VARCHAR(100) NOT NULL UNIQUE COMMENT "Почта",
+    ->   phone VARCHAR(100) NOT NULL UNIQUE COMMENT "Телефон",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Пользователи";
+Query OK, 0 rows affected (0.86 sec)
+
+mysql> CREATE TABLE profiles (
+    -> RIMARY KEY COMMENT "Ссылка на пользователя",   user_id INT UNSIGNED NOT NULL PRIMARY KEY COMMENT "Ссылка на пользователя",
+ строки",
+  u    ->   gender CHAR(1) NOT NULL COMMENT "Пол",
+    ->  "Время обновления строки"
+) COMMENT   birthday DATE COMMENT "Дата рождения",
+    ->   photo_id INT UNSIGNED COMMENT "Ссылка на основную фотографию пользователя",
+    ->   city VARCHAR(130) COMMENT "Город проживания",
+    ->   country VARCHAR(130) COMMENT "Страна проживания",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Профили";
+Query OK, 0 rows affected (0.52 sec)
+
+mysql> CREATE TABLE messages (
+роки",
+  from_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на о    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
+    -> E CURRENT_TIMESTAMP COMMENT "Время обновления ст  from_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на отправителя сообщения",
+    ->   to_user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на получателя сообщения",
+    ->   body TEXT NOT NULL COMMENT "Текст сообщения",
+    ->   is_important BOOLEAN COMMENT "Признак важности",
+    ->   is_delivered BOOLEAN COMMENT "Признак доставки",
+    ->   created_at DATETIME DEFAULT NOW() COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Сообщения";
+Query OK, 0 rows affected (0.34 sec)
+
+mysql> CREATE TABLE friendship (
+    -> ружеских отношений",
+  friend_id IN  user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на инициатора дружеских отношений",
+ия дружить",
+  confirmed_at DATETIME COMMENT "Время подтв    ->   friend_id INT UNSIGNED NOT NULL COMMENT "Ссылка на получателя приглашения дружить",
+    ->   status_id INT UNSIGNED NOT NULL COMMENT "Ссылка на статус (текущее состояние) отношений",
+    ->   requested_at DATETIME DEFAULT NOW() COMMENT "Время отправления приглашения дружить",
+    ->   confirmed_at DATETIME COMMENT "Время подтверждения приглашения",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки",
+    ->   PRIMARY KEY (user_id, friend_id) COMMENT "Составной первичный ключ"
+    -> ) COMMENT "Таблица дружбы";
+Query OK, 0 rows affected (0.52 sec)
+
+mysql> CREATE TABLE friendship_statuses (
+UNIQUE COMMENT "Назван    -> и  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
+    ->   name VARCHAR(150) NOT NULL UNIQUE COMMENT "Название статуса",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Статусы дружбы";
+Query OK, 0 rows affected (0.36 sec)
+
+mysql> CREATE TABLE communities (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор сроки",
+бновления строки"
+) COMMENT "Группы";    ->   name VARCHAR(150) NOT NULL UNIQUE COMMENT "Название группы",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Группы";
+Query OK, 0 rows affected (0.62 sec)
+
+mysql> CREATE TABLE communities_users (
+    -> UNSIGNED NOT NULL  community_id INT UNSIGNED NOT NULL COMMENT "Ссылка на группу",
+"Участники групп, связь между пользователями и группами";    ->   user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пользователя",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   PRIMARY KEY (community_id, user_id) COMMENT "Составной первичный ключ"
+    -> ) COMMENT "Участники групп, связь между пользователями и группами";
+Query OK, 0 rows affected (0.45 sec)
+
+mysql> CREATE TABLE media (
+    -> MMENT "Идентификатор строки",
+  user_i  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
+    ->   user_id INT UNSIGNED NOT NULL COMMENT "Ссылка на пользователя, который загрузил файл",
+    ->   filename VARCHAR(255) NOT NULL COMMENT "Путь к файлу",
+    ->   size INT NOT NULL COMMENT "Размер файла",
+    ->   metadata JSON COMMENT "Метаданные файла",
+    ->   media_type_id INT UNSIGNED NOT NULL COMMENT "Ссылка на тип контента",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Медиафайлы";
+Query OK, 0 rows affected (0.56 sec)
+
+mysql> CREATE TABLE media_types (
+    -> OMMENT "Идентификатор строки",
+  name   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT "Идентификатор строки",
+    ->   name VARCHAR(255) NOT NULL UNIQUE COMMENT "Название типа",
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT "Время создания строки",
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT "Время обновления строки"
+    -> ) COMMENT "Типы медиафайлов";
+Query OK, 0 rows affected (0.47 sec)
+
+mysql> SHOW TABLES;
+ERROR 1046 (3D000): No database selected
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| communities         |
+| communities_users   |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| profiles            |
+| users               |
++---------------------+
+9 rows in set (0.01 sec)
+
+mysql> exit
+Bye
+anastazia@anastazia-VirtualBox:~$
+
+
+Задание 2:
+-----------------------------------------------------------------------------------------
+
