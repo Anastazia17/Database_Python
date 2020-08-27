@@ -1,0 +1,1261 @@
+Задание 1:
+Повторить все действия по доработке БД vk.
+----------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.18362.1016]
+(c) Корпорация Майкрософт (Microsoft Corporation), 2019. Все права защищены.
+
+C:\Users\111>ssh anastazia@192.168.1.7
+anastazia@192.168.1.7's password:
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.15.0-45-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+Могут быть обновлены 389 пакетов.
+334 обновления касаются безопасности системы.
+
+Last login: Thu Aug 20 15:23:32 2020 from 192.168.1.3
+
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 21
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> DROP DATABASE vk;
+Query OK, 9 rows affected (2.23 sec)
+
+mysql> CREATE DATABASE vk;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> exit
+Bye
+
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p vk < vk.dump.sql
+Enter password:
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 24
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| communities         |
+| communities_users   |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| profiles            |
+| users               |
++---------------------+
+9 rows in set (0.01 sec)
+
+mysql> CREATE TABLE regions (
+    -> GNE  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> name VA  name VARCHAR(150) NOT NULL,
+    ->   parent_id INT unsigned DEFAULT NULL,
+    ->   code INT DEFAULT NULL,
+    ->   created_at DATETIME DEFAULT NOW(),
+    ->  updated_  updated_at DATETIME DEFAULT NOW() ON UPDATE NOW()
+    -> TER T);
+ADD COLUMN region_id INT unsigned DEFAULT NULL;Query OK, 0 rows affected (0.60 sec)
+
+mysql>
+mysql> ALTER TABLE profiles ADD COLUMN region_id INT unsigned DEFAULT NULL;
+Query OK, 0 rows affected (0.65 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| communities         |
+| communities_users   |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+10 rows in set (0.00 sec)
+
+mysql> CREATE TABLE cities (
+    -> id int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор строки',  id int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор строки',
+    ->    name varchar(100) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Наименование города',
+    ->   country_id int(11) NOT NULL COMMENT 'Идентификатор страны',
+    ->   created_at datetime DEFAULT current_timestamp() COMMENT 'Время создания строки',
+    ->   updated_at datetime DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'Время обновления строки',
+    ->   PRIMARY KEY (id),
+    ->   UNIQUE KEY city_name (name)
+    -> );
+Query OK, 0 rows affected (0.68 sec)
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| cities              |
+| communities         |
+| communities_users   |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+12 rows in set (0.01 sec)
+
+mysql> CREATE TABLE countries (
+    ->   id int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор строки',
+    -> e DEFAULT current_t  name varchar(100) COLLATE utf8_unicode_ci NOT NULL COMMENT 'Название государства',
+    -> name  created_at datetime DEFAULT current_timestamp() COMMENT 'Время создания строки',
+    ->   updated_at datetime DEFAULT current_timestamp() ON UPDATE current_timestamp() COMMENT 'Время обновления строки',
+    ->   PRIMARY KEY (id),
+    ->   UNIQUE KEY country_name (name)
+    -> );
+Query OK, 0 rows affected (0.71 sec)
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| cities              |
+| communities         |
+| communities_users   |
+| countries           |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+13 rows in set (0.01 sec)
+
+
+Задание 2:
+Заполнить новые таблицы.
+Повторить все действия CRUD.
+----------------------------------------------------------------------------
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| authors             |
+| cities              |
+| communities         |
+| communities_users   |
+| countries           |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+14 rows in set (0.00 sec)
+
+mysql> SELECT * FROM users LIMIT 10;
++----+------------+-------------+------------------------------+---------------------+---------------------+---------------------+
+| id | first_name | last_name   | email                        | phone               | created_at          | updated_at          |
++----+------------+-------------+------------------------------+---------------------+---------------------+---------------------+
+|  1 | Creola     | Baumbach    | maverick.herman@example.org  | 502.452.1568x3993   | 1972-06-28 07:55:33 | 2000-06-16 13:35:05 |
+|  2 | Dangelo    | Kozey       | edwardo.mayer@example.com    | (435)644-4646       | 1986-11-14 20:30:25 | 1984-10-01 01:05:59 |
+|  3 | Marcia     | Spinka      | berge.keshawn@example.org    | 1-188-773-2847x7823 | 1992-08-30 15:04:41 | 1981-05-21 11:53:44 |
+|  4 | Stan       | Fay         | syble.erdman@example.com     | 06740833022         | 1997-07-14 14:45:37 | 2013-06-30 00:42:51 |
+|  5 | Luis       | Kling       | jacklyn.prohaska@example.com | (647)920-8985       | 2014-05-14 01:49:10 | 1983-09-13 08:49:36 |
+|  6 | Charity    | Torp        | abbey.fritsch@example.org    | +73(7)0049791534    | 1999-01-28 09:47:25 | 1995-06-04 21:03:49 |
+|  7 | Dariana    | Heathcote   | bertha86@example.net         | 1-612-342-2165      | 1995-10-04 13:48:01 | 1991-12-26 09:38:31 |
+|  8 | Jayda      | Stoltenberg | webster.skiles@example.org   | 1-613-899-6321      | 2012-06-02 02:47:42 | 1998-08-02 00:54:52 |
+|  9 | Alda       | Hackett     | woodrow81@example.com        | 677-320-0823x12195  | 1990-03-12 07:48:04 | 1973-09-17 11:50:37 |
+| 10 | Orie       | Schumm      | sschimmel@example.org        | +03(4)7974869369    | 1980-07-04 07:28:43 | 2004-04-17 10:27:42 |
++----+------------+-------------+------------------------------+---------------------+---------------------+---------------------+
+10 rows in set (0.00 sec)
+
+mysql> DESC users;
++------------+------------------+------+-----+-------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default           | Extra                       |
++------------+------------------+------+-----+-------------------+-----------------------------+
+| id         | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| first_name | varchar(100)     | NO   |     | NULL              |                             |
+| last_name  | varchar(100)     | NO   |     | NULL              |                             |
+| email      | varchar(100)     | NO   | UNI | NULL              |                             |
+| phone      | varchar(100)     | NO   | UNI | NULL              |                             |
+| created_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++------------+------------------+------+-----+-------------------+-----------------------------+
+7 rows in set (0.01 sec)
+
+mysql> SELECT * FROM messages;
++-----+--------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+| id  | from_user_id | to_user_id | body                                                                                                                                                                                                                                           | is_important | is_delivered | created_at          | updated_at          |
++-----+--------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+|   1 |            1 |          1 | Est nulla aut sequi placeat quis quasi. Sit qui molestiae molestias delectus iure qui excepturi. Tempora ut numquam eligendi. Rerum quasi recusandae in eum voluptate.                                                                         |            1 |            1 | 1990-05-03 03:10:05 | 2017-04-19 13:19:43 |
+|   2 |            2 |          2 | Quibusdam ut quod suscipit rem voluptates et. Facere adipisci culpa expedita ad quis. Iure sed iste quam consectetur enim rerum laborum. Iure qui nisi alias nihil qui qui.                                                                    |            0 |            0 | 1993-09-12 10:12:41 | 1988-02-15 12:32:10 |
+|   3 |            3 |          3 | Sit voluptas ipsum rerum voluptatem laboriosam. Dolorum dolorem minus voluptatem et. Voluptas illum sunt itaque amet earum aliquid. Voluptatem sed voluptatem aliquam recusandae quidem fugit sunt.                                            |            0 |            1 | 1978-12-15 20:06:38 | 2013-05-07 01:08:52 |
+|   4 |            4 |          4 | Magnam voluptas nesciunt temporibus quaerat modi ut tempora. Sunt consequatur enim quis accusamus. Aut inventore enim at at totam autem.                                                                                                       |            1 |            1 | 2000-09-06 11:09:16 | 1978-01-26 02:45:39 |
+|   5 |            5 |          5 | Nesciunt consequatur unde ab veniam libero et. Cum eum culpa dolore aliquid et sequi. Expedita maiores consequatur quia qui eius.                                                                                                              |            1 |            0 | 2017-08-18 07:04:18 | 1988-09-18 09:17:05 |
+|   6 |            6 |          6 | Nostrum neque ut illo illo. Sit recusandae quos repudiandae doloremque. Sed consequuntur quia voluptatem corporis nemo vel dolorum. Non similique quo sit voluptas.                                                                            |            1 |            1 | 2004-07-06 15:04:44 | 1999-10-19 08:33:01 |
+|   7 |            7 |          7 | Ducimus et sit vel assumenda. Minima quidem qui quia. Ipsam vel similique sunt inventore voluptas quos at dignissimos.                                                                                                                         |            0 |            1 | 1999-04-13 10:18:01 | 2011-11-07 06:14:06 |
+|   8 |            8 |          8 | Adipisci veniam modi labore amet hic a. In perferendis autem aspernatur magnam non. Rerum corrupti harum et quos enim ducimus. Libero consequatur ut explicabo rem.                                                                            |            1 |            0 | 1977-09-11 04:40:25 | 2005-05-09 04:41:31 |
+|   9 |            9 |          9 | Pariatur sed doloremque sint minima omnis voluptas. Delectus enim distinctio aliquam quos officia. Doloremque vel quis tempore esse.                                                                                                           |            0 |            0 | 1986-11-04 06:49:48 | 1995-02-27 16:48:57 |
+|  10 |           10 |         10 | Facere et sed et est possimus voluptates animi. Et amet sed ut sit sed. Eos sint incidunt at qui. Commodi deserunt dolor enim sapiente ut nihil.                                                                                               |            0 |            0 | 1980-09-09 18:06:49 | 1978-02-04 00:48:25 |
+|  11 |           11 |         11 | Vel quis voluptatem qui. Vel qui eligendi molestiae error atque dignissimos nemo. Repellat veniam voluptatem et et. Quia dolores quia quod ut voluptatem aut. Distinctio repudiandae architecto iusto doloribus fugiat qui.                    |            1 |            0 | 1995-06-09 00:18:59 | 1970-10-31 22:56:17 |
+|  12 |           12 |         12 | Accusamus excepturi ipsum quis magnam. Vitae at et sequi atque asperiores temporibus quasi aspernatur. Sed voluptas placeat quasi vel dolor.                                                                                                   |            0 |            0 | 2009-12-10 11:59:39 | 1975-01-29 20:39:04 |
+|  13 |           13 |         13 | Voluptatem sunt repudiandae facere quam. Repellendus et explicabo incidunt enim voluptatem nihil labore velit. Aliquam nulla qui quia.                                                                                                         |            1 |            1 | 1985-08-16 06:47:51 | 1970-12-19 23:28:04 |
+|  14 |           14 |         14 | Dolor laudantium voluptas aut vero doloribus laboriosam est. Vel perspiciatis excepturi perspiciatis quibusdam voluptatem. Quibusdam mollitia cupiditate similique magni dolorum et laudantium. Maxime vel placeat veritatis quia nostrum.     |            1 |            1 | 1995-01-08 21:41:39 | 1971-08-04 12:42:03 |
+|  15 |           15 |         15 | Qui impedit in ex dolorem ea dolorem dolorum similique. Doloremque itaque est facere veniam. Est et quia doloremque numquam.                                                                                                                   |            1 |            1 | 1970-07-22 13:27:05 | 1979-06-21 05:46:20 |
+|  16 |           16 |         16 | Voluptatem soluta minus alias voluptas cupiditate consectetur esse. Incidunt officiis nihil aspernatur dolorum. Aut tempore inventore illo non accusantium ut. Maiores assumenda quasi ut quis.                                                |            0 |            1 | 1980-08-13 18:23:24 | 1975-11-15 22:15:15 |
+|  17 |           17 |         17 | Sequi est sed placeat veniam nam est. Qui est tenetur consequuntur quis voluptates. Tenetur corporis accusantium est a cupiditate quibusdam dolores laborum. Dolores aliquid eligendi atque sint possimus sit dolorem quo.                     |            0 |            1 | 2015-05-28 13:51:50 | 2000-03-11 21:37:59 |
+|  18 |           18 |         18 | Ex quia similique ratione sit dolor asperiores. Non atque dolor animi quod rerum in qui. Voluptas aut dignissimos hic sunt maxime. Facere ad culpa soluta molestias adipisci veniam tenetur corporis. Est magni sed facilis.                   |            1 |            0 | 1989-02-07 10:07:58 | 1982-07-26 19:31:26 |
+|  19 |           19 |         19 | Qui repudiandae iusto aut aperiam repellendus. Rerum autem at officiis dolorem vel. Qui eius incidunt laudantium nihil. Quos incidunt dolor nostrum voluptatem.                                                                                |            0 |            1 | 2019-09-24 00:51:52 | 2009-11-27 02:25:58 |
+|  20 |           20 |         20 | Nesciunt ad non culpa. Molestiae cupiditate iure et nobis consectetur esse repellat. Neque quia molestiae vitae harum quibusdam similique.                                                                                                     |            0 |            1 | 1978-02-02 00:06:47 | 2019-02-26 01:34:39 |
+|  21 |           21 |         21 | Qui molestiae voluptatum quae corporis amet velit et. Quo voluptates alias fugit reiciendis ratione possimus veritatis pariatur. Provident illo qui voluptas explicabo. Voluptatem quaerat quia autem animi aut molestias.                     |            1 |            0 | 1995-09-18 17:42:25 | 2006-06-22 14:38:18 |
+|  22 |           22 |         22 | Cumque sed numquam dignissimos recusandae. Velit libero minima ea harum maxime ut non. Minus dolorem consequatur tempora reiciendis rem. Minus provident aut ex qui dolorem similique.                                                         |            1 |            0 | 1971-08-03 15:30:46 | 1997-02-08 11:17:19 |
+|  23 |           23 |         23 | Architecto voluptates quidem harum quasi. Quis quos aut eius minus magnam et. Et libero ut aut nihil sequi. Eveniet laboriosam omnis dolore pariatur quasi. Quia est sit mollitia non in ea nesciunt sequi.                                    |            1 |            1 | 1999-09-08 14:25:56 | 1981-12-13 13:22:34 |
+|  24 |           24 |         24 | Voluptas sequi autem consequatur molestias. Sit pariatur cupiditate debitis cumque doloribus voluptatem asperiores. Ipsam sit autem cum dolor asperiores reiciendis.                                                                           |            1 |            1 | 1987-05-07 14:47:04 | 1977-02-13 17:46:20 |
+|  25 |           25 |         25 | Alias velit itaque et et tempora. Voluptatum voluptatem maxime consequatur consequatur.                                                                                                                                                        |            1 |            1 | 1970-05-03 08:55:04 | 2018-02-04 08:24:45 |
+|  26 |           26 |         26 | Quia cupiditate tempora ex est suscipit eum. Aut voluptatem alias explicabo repudiandae aut.                                                                                                                                                   |            1 |            1 | 1990-06-06 10:54:36 | 1983-02-13 16:40:08 |
+|  27 |           27 |         27 | Est ut perspiciatis tenetur dolor modi et rem pariatur. Rem facere consequatur reiciendis voluptatem. Error laboriosam sed et ipsam.                                                                                                           |            1 |            1 | 2014-02-17 04:56:29 | 2010-07-19 20:13:33 |
+|  28 |           28 |         28 | Sint veritatis aut ab omnis. Beatae vitae rerum qui voluptate. Iste ab est incidunt maiores iste perspiciatis ab natus.                                                                                                                        |            0 |            1 | 2009-05-28 14:33:32 | 2008-12-12 16:34:08 |
+|  29 |           29 |         29 | At veritatis aliquid nam incidunt repudiandae quos assumenda. Qui voluptatum aut a illo. Qui facere alias velit quis.                                                                                                                          |            1 |            1 | 1992-08-19 11:58:59 | 2008-09-14 16:40:20 |
+|  30 |           30 |         30 | Qui incidunt recusandae autem nobis aut similique enim. Ex cum vel sed dolorem quam rerum. Rem totam ipsum natus minus iure ex.                                                                                                                |            0 |            1 | 2007-06-03 12:21:06 | 2004-08-26 13:05:21 |
+|  31 |           31 |         31 | Qui voluptatem hic sint exercitationem molestiae inventore nesciunt. Quis nihil in aperiam explicabo. Tempora in at sequi.                                                                                                                     |            0 |            0 | 1977-06-03 20:40:23 | 2012-12-04 18:40:02 |
+|  32 |           32 |         32 | Quis pariatur nisi praesentium ea eos et. Repellendus ab quo enim totam accusamus. Consequatur ea debitis aperiam officiis molestiae qui.                                                                                                      |            0 |            0 | 2006-09-14 07:17:57 | 1977-02-28 20:18:44 |
+|  33 |           33 |         33 | Ex ab consequatur eum quibusdam quidem deleniti. Minus sed ducimus neque culpa fugiat et suscipit. Accusamus sit voluptatem maiores non.                                                                                                       |            0 |            0 | 2012-01-05 16:24:59 | 1991-08-17 07:32:50 |
+|  34 |           34 |         34 | Perferendis est a fugit eaque. Voluptatem quia aut aut impedit deleniti molestiae. Ad quo dolorum neque quia sint non.                                                                                                                         |            0 |            1 | 1981-12-23 10:43:52 | 2015-09-01 21:10:58 |
+|  35 |           35 |         35 | Dolor esse voluptates necessitatibus mollitia eos explicabo. Atque et veritatis officia repudiandae consequatur quas. Voluptate quod culpa fuga voluptatibus voluptas voluptatem.                                                              |            0 |            0 | 1970-05-02 02:42:59 | 2003-08-08 05:52:46 |
+|  36 |           36 |         36 | Accusantium beatae expedita sed exercitationem maxime. Dolor sapiente blanditiis et. Tempora commodi quos sunt harum provident est. Nihil id aut minus et quod maxime ut praesentium.                                                          |            1 |            0 | 2000-12-19 13:55:25 | 1995-09-22 07:36:28 |
+|  37 |           37 |         37 | Quia eum praesentium voluptas eos et. Minus enim quis at dignissimos quia rerum dolor. Est cupiditate ad eaque.                                                                                                                                |            1 |            0 | 2019-12-05 00:57:29 | 1986-03-31 02:50:27 |
+|  38 |           38 |         38 | Dolor officiis temporibus id officia quos. Quo eveniet sit autem fugiat. Repudiandae sed sunt inventore veritatis voluptas ea. Repudiandae eum qui nihil quo recusandae eligendi ea officia. Ea eos sit vel et ipsam.                          |            0 |            0 | 1980-04-23 06:28:38 | 2000-06-03 15:44:01 |
+|  39 |           39 |         39 | Quasi est nobis ipsam occaecati. Unde necessitatibus ipsa rerum deserunt tempora quia molestias earum. Alias voluptas labore vitae enim.                                                                                                       |            1 |            0 | 1985-01-02 13:52:25 | 1973-03-11 08:04:01 |
+|  40 |           40 |         40 | Commodi aperiam nihil molestiae ut. Odit sequi magni quia. Et dolor voluptatem totam incidunt facilis consequuntur. Quis fugit veniam quis nisi eaque quidem.                                                                                  |            1 |            1 | 2004-11-02 18:05:45 | 1977-10-20 22:57:22 |
+|  41 |           41 |         41 | Sint quis aspernatur facere nesciunt voluptatem ratione necessitatibus. Soluta provident quibusdam ipsa doloremque. In a praesentium enim accusamus fuga facere.                                                                               |            1 |            0 | 1981-02-14 16:22:20 | 1977-10-21 23:46:27 |
+|  42 |           42 |         42 | Excepturi at non est nihil. Non aut accusamus ipsam laudantium voluptates illo explicabo. Quia omnis vel incidunt qui veniam provident. Animi et eius dolores ut aliquam deserunt est distinctio.                                              |            0 |            0 | 2014-07-17 12:05:52 | 1985-10-26 19:08:11 |
+|  43 |           43 |         43 | Eius veniam eligendi ipsum in architecto. Eos vitae illo quia.                                                                                                                                                                                 |            0 |            1 | 2014-07-13 05:38:36 | 2007-05-12 21:05:44 |
+|  44 |           44 |         44 | Dolorem quidem optio aut recusandae non in sed. Aut non rerum magni asperiores. Veritatis laudantium placeat voluptates voluptas inventore nisi. Est non ab et est.                                                                            |            1 |            1 | 1984-07-10 15:52:33 | 1971-04-28 05:01:50 |
+|  45 |           45 |         45 | Et impedit in quasi dolorem dolor. Quos dolorem commodi dolores illo culpa et. Accusamus ut consectetur unde expedita unde eos corrupti.                                                                                                       |            1 |            0 | 2007-04-20 16:32:11 | 2001-04-07 05:29:17 |
+|  46 |           46 |         46 | Est accusantium fugiat consequatur doloremque dolore quam. Delectus ipsa ea omnis nostrum sequi quas vero. Aut quia exercitationem numquam cupiditate iusto rerum laboriosam. Nesciunt eius temporibus qui nihil eligendi autem.               |            1 |            1 | 2014-06-03 14:50:57 | 1985-12-10 20:12:12 |
+|  47 |           47 |         47 | Ipsum consectetur sint doloremque. Iure corporis voluptatibus et nesciunt animi.                                                                                                                                                               |            1 |            1 | 1981-05-18 16:51:27 | 1980-12-17 21:43:57 |
+|  48 |           48 |         48 | Eaque libero sed voluptatibus occaecati nostrum officia. Eum in voluptatem in iure sint maxime enim. Vel a recusandae facilis impedit tenetur. Ex reprehenderit quas aut mollitia quasi dolorem.                                               |            1 |            0 | 2016-06-13 14:58:17 | 2012-08-29 07:07:00 |
+|  49 |           49 |         49 | Et praesentium repellendus dolor. Culpa modi est laudantium et ratione. Deleniti similique totam error repellendus ut aperiam natus optio.                                                                                                     |            0 |            0 | 1999-06-25 16:31:20 | 1991-08-05 06:17:08 |
+|  50 |           50 |         50 | Et aspernatur reiciendis ratione aperiam cupiditate fugit. Dolorem iure similique deserunt deleniti inventore culpa. Asperiores autem sapiente est.                                                                                            |            1 |            1 | 1983-05-11 10:17:10 | 2007-10-04 22:03:37 |
+|  51 |           51 |         51 | Suscipit accusamus necessitatibus eligendi nisi dolores pariatur quae saepe. Et animi sunt quas debitis beatae. Aut ut omnis voluptates aliquid saepe.                                                                                         |            0 |            1 | 2005-01-24 20:53:47 | 2004-09-18 18:50:52 |
+|  52 |           52 |         52 | Vitae id rerum non. Dignissimos excepturi architecto aut quia quis. Sint vel quis ipsum. Aliquid a consequatur consequatur cupiditate accusantium autem.                                                                                       |            1 |            0 | 2007-11-12 14:26:35 | 1976-08-02 04:08:53 |
+|  53 |           53 |         53 | In accusantium veritatis qui molestias. Nostrum nam eum eum odio. Voluptatem adipisci corrupti consequatur officiis libero incidunt necessitatibus. Totam dolorum minima excepturi molestias.                                                  |            0 |            1 | 1995-11-06 07:44:54 | 1975-08-23 14:58:19 |
+|  54 |           54 |         54 | Omnis nesciunt tempora voluptatem. Totam nobis magni veniam natus doloribus reiciendis et. Ipsam sed eveniet officia ut voluptatum velit.                                                                                                      |            1 |            0 | 1999-02-22 02:41:32 | 1990-08-16 02:48:44 |
+|  55 |           55 |         55 | Aut necessitatibus eaque sapiente ratione velit ut maiores natus. Voluptatem porro quisquam ea nam corporis. Amet perspiciatis et assumenda rem. Quia sit maxime veniam fugit illum non ab eum. Natus ipsam aut sed in.                        |            0 |            0 | 2009-05-10 12:08:42 | 2007-01-02 11:31:39 |
+|  56 |           56 |         56 | Magnam molestiae inventore est autem qui. Tempore iste neque doloremque mollitia ut magnam. Fugiat ut quam praesentium. Sint ea et et similique ut occaecati. Hic itaque vel est voluptas.                                                     |            0 |            0 | 2014-10-26 06:39:00 | 2015-11-01 02:09:10 |
+|  57 |           57 |         57 | Facilis non ad et voluptates iusto. Sit voluptas ullam est quia velit ab qui. Quibusdam quae fuga ut necessitatibus et rerum. Sit ea quod unde commodi beatae cupiditate.                                                                      |            1 |            1 | 2008-01-27 12:31:33 | 1988-05-13 09:54:25 |
+|  58 |           58 |         58 | Sint quam pariatur aperiam reiciendis. Impedit cumque delectus officia maiores magnam veritatis non. Quis rerum doloribus ipsum corporis et. Quaerat dolores sed consectetur ut nulla quam.                                                    |            1 |            1 | 2018-09-18 00:02:34 | 1996-11-12 01:15:56 |
+|  59 |           59 |         59 | Quasi doloribus aut nam ullam et animi quod culpa. Labore omnis sunt officiis exercitationem rerum accusamus temporibus.                                                                                                                       |            1 |            1 | 1985-12-12 20:55:53 | 1982-11-28 10:22:36 |
+|  60 |           60 |         60 | Ut deserunt quia aliquam sit nam aut. Quia voluptatem minus aliquid nisi. Earum consequatur molestiae cumque et ut labore et vitae. Illum rem magnam voluptas occaecati consequatur qui iusto.                                                 |            1 |            1 | 1973-03-04 05:59:59 | 2020-06-07 21:30:03 |
+|  61 |           61 |         61 | Soluta officiis ex cum eum sequi praesentium. Quisquam reprehenderit ratione id dicta.                                                                                                                                                         |            0 |            1 | 1990-08-16 11:08:31 | 1989-11-21 22:59:36 |
+|  62 |           62 |         62 | Rerum dolorum ad corporis nihil animi similique. Tenetur aut magni provident et est aspernatur quod cum. Maxime temporibus placeat consequatur possimus facere soluta. Voluptas aut id aut saepe dolorem sed voluptate totam.                  |            0 |            1 | 1980-07-30 23:44:07 | 2010-05-15 12:07:54 |
+|  63 |           63 |         63 | Commodi voluptatem molestiae accusamus quos perspiciatis et non. Rerum provident exercitationem reprehenderit labore beatae incidunt qui. Ducimus accusamus nam temporibus repudiandae adipisci nesciunt dolor.                                |            1 |            1 | 2009-01-16 22:38:18 | 2011-12-21 04:13:00 |
+|  64 |           64 |         64 | Qui voluptas quo quis tenetur sunt at. Enim accusantium qui dignissimos aut facilis. Soluta qui dolorem omnis architecto. Et asperiores nesciunt commodi rerum natus et. Consequatur ipsam ad est sunt ut praesentium accusamus et.            |            1 |            0 | 2014-01-30 15:28:58 | 2018-09-17 06:22:32 |
+|  65 |           65 |         65 | Id ut et voluptatem officiis. Tempora quia quas corrupti voluptatem blanditiis qui et est. Qui eos error quia molestiae eaque.                                                                                                                 |            0 |            0 | 2001-06-19 11:06:59 | 1984-08-26 22:45:54 |
+|  66 |           66 |         66 | Consequuntur explicabo laboriosam ut quas voluptate sunt. Doloribus maiores sed quia autem. Nemo non omnis voluptatum dolorem unde ullam.                                                                                                      |            0 |            0 | 2010-10-04 19:22:31 | 1977-07-03 08:52:56 |
+|  67 |           67 |         67 | Magni quasi amet id debitis magnam. Similique qui totam sint non dignissimos. Vitae et ea quia ab distinctio velit.                                                                                                                            |            1 |            0 | 1973-05-06 09:46:03 | 1972-05-24 21:53:30 |
+|  68 |           68 |         68 | Et mollitia non quis. Debitis est odit explicabo aperiam quia esse suscipit qui. In dolorem qui est iusto quia eos accusantium placeat.                                                                                                        |            0 |            0 | 1991-08-12 16:35:18 | 1984-07-19 13:11:37 |
+|  69 |           69 |         69 | Voluptas dicta temporibus veniam enim quae cum nesciunt. Voluptas dolores quibusdam veritatis aliquam est expedita. Officiis dolore autem ut nobis.                                                                                            |            1 |            0 | 1970-12-23 17:25:48 | 1991-04-15 12:49:53 |
+|  70 |           70 |         70 | Sunt velit placeat facere. Rerum eligendi sequi dolores sit.                                                                                                                                                                                   |            0 |            0 | 2004-08-17 17:53:58 | 2017-09-16 05:47:44 |
+|  71 |           71 |         71 | Tempore alias quia sint et iste. Nostrum enim aut laboriosam a quos. Cumque accusantium cumque velit ut vel id.                                                                                                                                |            1 |            1 | 2018-10-14 00:37:07 | 1993-04-10 09:10:27 |
+|  72 |           72 |         72 | Atque exercitationem sint earum ipsum fugit qui minus culpa. Et ut quam cupiditate vero dolores illum veritatis. Ea amet magni sunt voluptatum distinctio similique.                                                                           |            1 |            1 | 1986-01-18 17:39:38 | 2016-11-29 07:20:02 |
+|  73 |           73 |         73 | Eligendi non exercitationem expedita ut officiis eveniet excepturi natus. Aut odio amet hic distinctio velit et. A iure quasi consequatur aut veritatis. Mollitia eligendi velit tenetur neque autem qui dolorum.                              |            0 |            0 | 1999-12-15 18:32:50 | 2001-09-26 21:56:33 |
+|  74 |           74 |         74 | Laboriosam debitis repellendus velit sunt minima. Voluptatem laborum atque sint dolorem asperiores a nesciunt. Et facere corrupti aliquam perferendis et ut. Reprehenderit optio odit est vel id.                                              |            1 |            0 | 1994-03-04 22:25:12 | 1975-02-23 13:17:18 |
+|  75 |           75 |         75 | Eveniet explicabo eveniet ipsam possimus consectetur omnis exercitationem. Eveniet id et tenetur omnis odio. Amet perspiciatis et quia magni molestiae aperiam.                                                                                |            0 |            1 | 1980-06-28 14:09:58 | 1977-08-27 16:02:49 |
+|  76 |           76 |         76 | Quia sint reiciendis non est quae illo. Aliquam sit voluptatem provident sapiente facilis saepe. Et accusantium deleniti sunt est. Iste doloribus dolorum qui quisquam ipsa sit voluptas fugit. Omnis ipsum quo omnis amet quo eius nulla.     |            0 |            0 | 2019-02-14 18:25:00 | 1997-03-07 13:21:23 |
+|  77 |           77 |         77 | Beatae ut laudantium porro quidem. Aspernatur quos quia recusandae fuga quis consequatur est. Pariatur ea eligendi rerum quam suscipit. Voluptate nobis unde nulla in ipsum ut voluptatem id.                                                  |            0 |            1 | 2000-05-16 19:28:14 | 2012-04-20 00:44:16 |
+|  78 |           78 |         78 | Qui ut id veniam neque ducimus error labore. Dolores sed consequuntur rerum temporibus. Vel voluptas enim natus qui praesentium quas qui. In incidunt cupiditate repellat aut quia nisi. Asperiores quidem ex et ipsum numquam sit dolores.    |            0 |            1 | 1996-01-27 21:38:25 | 1975-06-15 23:52:01 |
+|  79 |           79 |         79 | Id et exercitationem modi voluptatem dolor quia qui voluptates. Assumenda deleniti nostrum et magnam et ut voluptatem molestiae. Eos exercitationem eum reiciendis accusantium non.                                                            |            0 |            1 | 2009-10-13 20:14:54 | 2009-07-06 15:18:19 |
+|  80 |           80 |         80 | Et enim odio commodi fuga. Reiciendis voluptatibus molestiae vero fugit expedita consectetur. Veritatis quasi qui est et est. Vel perferendis omnis distinctio ipsum.                                                                          |            1 |            1 | 2015-07-12 10:29:15 | 1999-10-04 22:06:54 |
+|  81 |           81 |         81 | Dolor nemo aut sit. Delectus vel rerum illo commodi ratione reiciendis accusantium. Similique ea fugit quidem eos.                                                                                                                             |            1 |            0 | 1976-06-29 23:58:35 | 2004-03-14 19:32:16 |
+|  82 |           82 |         82 | Asperiores fugit deserunt placeat ut aspernatur maiores dolor tempore. Excepturi ducimus ea et autem ut assumenda omnis. Dolores ut tenetur aut blanditiis sunt eos ullam. Aut temporibus minus soluta saepe.                                  |            1 |            0 | 2003-04-12 11:06:05 | 2001-06-08 11:42:08 |
+|  83 |           83 |         83 | Ipsum dolorem autem est libero architecto. Sit et id non voluptatem ut veniam. Qui explicabo magni iste ut doloremque in.                                                                                                                      |            1 |            0 | 1988-10-27 10:08:32 | 1978-11-16 14:17:18 |
+|  84 |           84 |         84 | Voluptate enim velit voluptatem et consequatur ab. Molestias praesentium quas ullam repellendus. Nesciunt est eligendi qui reiciendis.                                                                                                         |            0 |            0 | 1976-08-22 02:10:45 | 1979-11-06 04:27:13 |
+|  85 |           85 |         85 | Maxime recusandae provident facere sequi incidunt. Officia officia libero illum iusto. Quos repudiandae et molestiae voluptatem debitis est ducimus.                                                                                           |            1 |            1 | 1971-08-11 04:40:16 | 2016-04-10 17:21:53 |
+|  86 |           86 |         86 | Voluptas magni est tempora alias impedit dignissimos sed. Odit et dolores magni ducimus inventore illum labore culpa. Quaerat voluptates voluptas est maxime sit. Et et dicta aut quo dolor tenetur est.                                       |            1 |            1 | 2008-10-15 11:43:10 | 2010-02-08 02:27:39 |
+|  87 |           87 |         87 | Quibusdam fuga error laudantium consequatur. Repudiandae sed repudiandae totam voluptas dolorem inventore. Dolore ut quo et tempora.                                                                                                           |            1 |            0 | 1990-10-18 02:27:40 | 1997-02-17 00:36:56 |
+|  88 |           88 |         88 | Aut asperiores dolor consequatur sit. Officia qui labore sit ducimus tempora sed. Quibusdam suscipit dolor minima ut voluptas et sed. Dolorem aut soluta iure labore qui soluta illo.                                                          |            1 |            0 | 2000-11-19 14:00:10 | 2012-04-06 21:53:48 |
+|  89 |           89 |         89 | Harum dolorum dolores enim qui magnam et consequuntur. Omnis deserunt nesciunt porro illum et aut laudantium. In ut magnam qui sit mollitia perspiciatis.                                                                                      |            1 |            1 | 2017-01-01 05:10:54 | 1990-08-19 07:08:53 |
+|  90 |           90 |         90 | Dolores aperiam quis voluptatibus eius expedita dolores dolorem. Suscipit asperiores voluptatum perspiciatis sed. Temporibus aliquid facilis ab est magnam et numquam.                                                                         |            1 |            1 | 1970-04-22 08:15:00 | 2017-05-23 18:56:22 |
+|  91 |           91 |         91 | Ullam et harum recusandae et accusantium. Voluptas earum autem nemo tempora. Delectus aliquid fugiat unde voluptatem.                                                                                                                          |            1 |            1 | 1977-11-05 06:07:27 | 1996-07-29 04:58:00 |
+|  92 |           92 |         92 | Nemo dolore itaque accusantium quibusdam ea possimus. Voluptas soluta aliquam officiis qui qui expedita. Voluptatem sapiente quia distinctio iusto vel corrupti tempore modi. Veritatis doloremque quo dolores esse laboriosam suscipit iusto. |            1 |            0 | 1991-07-28 16:50:20 | 2014-07-05 23:32:23 |
+|  93 |           93 |         93 | Consequatur eos et aut maxime sint. Iusto saepe omnis libero aperiam omnis. Quae est et et in.                                                                                                                                                 |            0 |            1 | 1978-02-22 19:10:30 | 2011-12-07 06:37:17 |
+|  94 |           94 |         94 | Omnis nesciunt reprehenderit voluptatem commodi. Voluptatum occaecati quam est mollitia quisquam voluptatibus officiis impedit. Quisquam quos qui aut. Nostrum fugiat quia animi nemo.                                                         |            1 |            0 | 2011-08-05 03:52:39 | 1988-08-24 14:15:49 |
+|  95 |           95 |         95 | Eaque ut tempore excepturi quo. Qui numquam voluptas dolorum et dolorum. Magnam blanditiis nihil itaque voluptas quo fuga. Eaque tempore in commodi vitae earum inventore ex corporis.                                                         |            0 |            0 | 2002-01-13 05:17:47 | 1995-06-13 17:48:57 |
+|  96 |           96 |         96 | Rerum libero blanditiis distinctio veritatis exercitationem tempora incidunt sunt. Asperiores quia aut ad est. Minus expedita voluptatibus voluptatum et ex.                                                                                   |            1 |            0 | 2015-08-23 08:58:39 | 1975-05-21 07:03:48 |
+|  97 |           97 |         97 | Qui alias quisquam hic autem error autem dolorem. Dolor et molestiae asperiores. Sint accusantium sit velit quo nisi officiis voluptatibus. Quasi in est voluptatem sit tenetur et.                                                            |            1 |            1 | 1977-05-24 23:19:10 | 1986-03-02 05:33:41 |
+|  98 |           98 |         98 | Omnis aut laboriosam numquam. Nobis minima nemo explicabo dicta illo tempora consequatur. Illo recusandae modi totam nulla quidem.                                                                                                             |            1 |            0 | 1991-08-17 12:30:54 | 1991-11-01 12:06:07 |
+|  99 |           99 |         99 | Eligendi tenetur eveniet eveniet aut. Porro earum ut enim rerum beatae. Vitae exercitationem nemo dicta ut voluptas id. Ullam ut temporibus incidunt magni occaecati voluptatem.                                                               |            0 |            0 | 1974-03-22 00:22:40 | 2012-07-23 22:50:00 |
+| 100 |          100 |        100 | Magni eos eos dolor. Eum architecto eligendi consequuntur corporis sed minima.                                                                                                                                                                 |            0 |            0 | 1999-01-08 20:43:12 | 2016-01-02 09:40:35 |
++-----+--------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+100 rows in set (0.02 sec)
+
+mysql> UPDATE users SET created_at = (SELECT created_at FROM messages WHERE users.id = messages.id),
+    ->                  updated_at = (SELECT updated_at FROM messages WHERE users.id = messages.id);
+Query OK, 100 rows affected (0.14 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> UPDATE users SET updated_at = NOW() WHERE updated_at < created_at;
+Query OK, 60 rows affected (0.12 sec)
+Rows matched: 60  Changed: 60  Warnings: 0
+
+mysql> DESC profiles;
++------------+------------------+------+-----+-------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default           | Extra                       |
++------------+------------------+------+-----+-------------------+-----------------------------+
+| user_id    | int(10) unsigned | NO   | PRI | NULL              |                             |
+| gender     | char(1)          | NO   |     | NULL              |                             |
+| birthday   | date             | YES  |     | NULL              |                             |
+| photo_id   | int(10) unsigned | YES  |     | NULL              |                             |
+| city       | varchar(130)     | YES  |     | NULL              |                             |
+| country    | varchar(130)     | YES  |     | NULL              |                             |
+| created_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| region_id  | int(10) unsigned | YES  |     | NULL              |                             |
++------------+------------------+------+-----+-------------------+-----------------------------+
+9 rows in set (0.02 sec)
+
+mysql> SELECT * FROM profiles LIMIT 10;
++---------+--------+------------+----------+-----------------+------------------+---------------------+---------------------+-----------+
+| user_id | gender | birthday   | photo_id | city            | country          | created_at          | updated_at          | region_id |
++---------+--------+------------+----------+-----------------+------------------+---------------------+---------------------+-----------+
+|       1 |        | 1974-02-25 |        0 | Port Sydneytown | Slovenia         | 2010-11-22 22:21:42 | 2019-06-30 00:29:03 |      NULL |
+|       2 | (      | 1976-12-05 |        0 | Schmelerville   | Tonga            | 2013-10-15 01:10:08 | 2018-12-18 07:43:38 |      NULL |
+|       3 |        | 1985-09-11 |        0 | Theaville       | United Kingdom   | 2019-01-09 11:43:01 | 2018-10-05 16:53:23 |      NULL |
+|       4 | (      | 1988-04-22 |        0 | North Ilaside   | Guinea           | 2014-09-09 09:39:22 | 2011-11-10 19:23:26 |      NULL |
+|       5 |        | 1990-02-02 |        0 | Morissetteside  | Gabon            | 2017-11-10 23:11:06 | 2013-10-02 19:11:29 |      NULL |
+|       6 |        | 1978-03-21 |        0 | South Trace     | Christmas Island | 2015-07-14 19:26:35 | 2016-09-30 00:35:08 |      NULL |
+|       7 | (      | 1984-11-20 |        0 | Heidenreichview | Malaysia         | 2012-07-23 02:38:34 | 2012-05-10 02:20:29 |      NULL |
+|       8 |        | 1982-02-19 |        0 | Blickborough    | Guadeloupe       | 2012-09-21 21:06:15 | 2019-01-02 15:08:56 |      NULL |
+|       9 | (      | 1994-07-22 |        0 | Tremaynemouth   | Anguilla         | 2020-07-12 23:43:10 | 2012-08-04 08:33:50 |      NULL |
+|      10 |        | 2004-06-06 |        0 | South Xzavier   | Nauru            | 2018-05-21 23:45:08 | 2014-08-18 17:54:58 |      NULL |
++---------+--------+------------+----------+-----------------+------------------+---------------------+---------------------+-----------+
+10 rows in set (0.01 sec)
+
+mysql> UPDATE profiles SET photo_id = FLOOR(1 + RAND() * 100);
+Query OK, 100 rows affected (0.05 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> CREATE TEMPORARY TABLE genders (name CHAR(1));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> INSERT INTO genders VALUES ('m'), ('f');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM genders;
++------+
+| name |
++------+
+| m    |
+| f    |
++------+
+2 rows in set (0.02 sec)
+
+mysql> UPDATE profiles
+    ->   SET gender = (SELECT name FROM genders ORDER BY RAND() LIMIT 1);
+Query OK, 100 rows affected (0.10 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> CREATE TEMPORARY TABLE countries (name VARCHAR(150));
+Query OK, 0 rows affected (0.65 sec)
+
+mysql> INSERT INTO countries VALUES ('Russian Federation'), ('Germany'), ('Belarus');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM countries;
++--------------------+
+| name               |
++--------------------+
+| Russian Federation |
+| Germany            |
+| Belarus            |
++--------------------+
+3 rows in set (0.01 sec)
+
+mysql> UPDATE profiles
+    ->   SET country = (SELECT name FROM countries ORDER BY RAND() LIMIT 1);
+Query OK, 100 rows affected (0.13 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| authors             |
+| cities              |
+| communities         |
+| communities_users   |
+| countries           |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+14 rows in set (0.00 sec)
+
+mysql> DESC messages;
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| Field        | Type             | Null | Key | Default           | Extra                       |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| id           | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| from_user_id | int(10) unsigned | NO   |     | NULL              |                             |
+| to_user_id   | int(10) unsigned | NO   |     | NULL              |                             |
+| body         | text             | NO   |     | NULL              |                             |
+| is_important | tinyint(1)       | YES  |     | NULL              |                             |
+| is_delivered | tinyint(1)       | YES  |     | NULL              |                             |
+| created_at   | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at   | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+8 rows in set (0.04 sec)
+
+mysql> SELECT * FROM messages LIMIT 10;
++----+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+| id | from_user_id | to_user_id | body                                                                                                                                                                                                | is_important | is_delivered | created_at          | updated_at          |
++----+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+|  1 |            1 |          1 | Est nulla aut sequi placeat quis quasi. Sit qui molestiae molestias delectus iure qui excepturi. Tempora ut numquam eligendi. Rerum quasi recusandae in eum voluptate.                              |            1 |            1 | 1990-05-03 03:10:05 | 2017-04-19 13:19:43 |
+|  2 |            2 |          2 | Quibusdam ut quod suscipit rem voluptates et. Facere adipisci culpa expedita ad quis. Iure sed iste quam consectetur enim rerum laborum. Iure qui nisi alias nihil qui qui.                         |            0 |            0 | 1993-09-12 10:12:41 | 1988-02-15 12:32:10 |
+|  3 |            3 |          3 | Sit voluptas ipsum rerum voluptatem laboriosam. Dolorum dolorem minus voluptatem et. Voluptas illum sunt itaque amet earum aliquid. Voluptatem sed voluptatem aliquam recusandae quidem fugit sunt. |            0 |            1 | 1978-12-15 20:06:38 | 2013-05-07 01:08:52 |
+|  4 |            4 |          4 | Magnam voluptas nesciunt temporibus quaerat modi ut tempora. Sunt consequatur enim quis accusamus. Aut inventore enim at at totam autem.                                                            |            1 |            1 | 2000-09-06 11:09:16 | 1978-01-26 02:45:39 |
+|  5 |            5 |          5 | Nesciunt consequatur unde ab veniam libero et. Cum eum culpa dolore aliquid et sequi. Expedita maiores consequatur quia qui eius.                                                                   |            1 |            0 | 2017-08-18 07:04:18 | 1988-09-18 09:17:05 |
+|  6 |            6 |          6 | Nostrum neque ut illo illo. Sit recusandae quos repudiandae doloremque. Sed consequuntur quia voluptatem corporis nemo vel dolorum. Non similique quo sit voluptas.                                 |            1 |            1 | 2004-07-06 15:04:44 | 1999-10-19 08:33:01 |
+|  7 |            7 |          7 | Ducimus et sit vel assumenda. Minima quidem qui quia. Ipsam vel similique sunt inventore voluptas quos at dignissimos.                                                                              |            0 |            1 | 1999-04-13 10:18:01 | 2011-11-07 06:14:06 |
+|  8 |            8 |          8 | Adipisci veniam modi labore amet hic a. In perferendis autem aspernatur magnam non. Rerum corrupti harum et quos enim ducimus. Libero consequatur ut explicabo rem.                                 |            1 |            0 | 1977-09-11 04:40:25 | 2005-05-09 04:41:31 |
+|  9 |            9 |          9 | Pariatur sed doloremque sint minima omnis voluptas. Delectus enim distinctio aliquam quos officia. Doloremque vel quis tempore esse.                                                                |            0 |            0 | 1986-11-04 06:49:48 | 1995-02-27 16:48:57 |
+| 10 |           10 |         10 | Facere et sed et est possimus voluptates animi. Et amet sed ut sit sed. Eos sint incidunt at qui. Commodi deserunt dolor enim sapiente ut nihil.                                                    |            0 |            0 | 1980-09-09 18:06:49 | 1978-02-04 00:48:25 |
++----+--------------+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+--------------+---------------------+---------------------+
+10 rows in set (0.02 sec)
+
+mysql> UPDATE messages SET
+    ->   from_user_id = FLOOR(1 + RAND() * 100),
+ = FLOOR(    ->   to_user_id = FLOOR(1 + RAND() * 100);
+Query OK, 100 rows affected (0.08 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> DESC media;
++---------------+------------------+------+-----+-------------------+-----------------------------+
+| Field         | Type             | Null | Key | Default           | Extra                       |
++---------------+------------------+------+-----+-------------------+-----------------------------+
+| id            | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| user_id       | int(10) unsigned | NO   |     | NULL              |                             |
+| filename      | varchar(255)     | NO   |     | NULL              |                             |
+| size          | int(11)          | NO   |     | NULL              |                             |
+| metadata      | longtext         | YES  |     | NULL              |                             |
+| media_type_id | int(10) unsigned | NO   |     | NULL              |                             |
+| created_at    | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at    | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++---------------+------------------+------+-----+-------------------+-----------------------------+
+8 rows in set (0.03 sec)
+
+mysql> SELECT * FROM media LIMIT 10;
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+| id | user_id | filename | size     | metadata | media_type_id | created_at          | updated_at          |
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+|  1 |       1 | porro    | 68150616 | NULL     |             0 | 2002-04-10 23:20:30 | 2008-01-30 07:21:36 |
+|  2 |       2 | quas     |      913 | NULL     |             0 | 1987-09-26 09:43:40 | 1993-04-28 13:28:21 |
+|  3 |       3 | sed      |     7463 | NULL     |             0 | 1982-03-24 03:17:22 | 2000-02-26 12:10:41 |
+|  4 |       4 | et       | 98874799 | NULL     |             0 | 1985-11-02 18:15:51 | 2005-09-21 22:49:51 |
+|  5 |       5 | modi     |        9 | NULL     |             0 | 1971-06-03 02:59:28 | 1977-01-31 15:22:00 |
+|  6 |       6 | impedit  |       86 | NULL     |             0 | 1996-01-27 11:58:24 | 2011-08-16 02:17:34 |
+|  7 |       7 | sint     |        0 | NULL     |             0 | 2015-07-06 10:00:36 | 1971-07-03 08:22:18 |
+|  8 |       8 | animi    |        4 | NULL     |             0 | 2016-03-15 13:39:17 | 2002-04-07 09:48:09 |
+|  9 |       9 | fugit    |        0 | NULL     |             0 | 1972-01-19 02:48:18 | 1991-03-17 10:23:53 |
+| 10 |      10 | impedit  |    41773 | NULL     |             0 | 2003-04-21 18:15:18 | 2013-04-02 04:51:20 |
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+10 rows in set (0.00 sec)
+
+mysql> SELECT * FROM media_types;
++-----+--------------+---------------------+---------------------+
+| id  | name         | created_at          | updated_at          |
++-----+--------------+---------------------+---------------------+
+|   1 | rem          | 2006-03-16 02:02:30 | 2009-07-31 02:54:31 |
+|   2 | iusto        | 1990-01-13 23:49:22 | 2008-06-24 16:00:10 |
+|   3 | magnam       | 2016-06-06 16:21:49 | 1978-01-14 07:37:58 |
+|   4 | maxime       | 1971-06-26 21:40:55 | 1987-11-23 12:06:42 |
+|   5 | non          | 1973-12-19 14:58:51 | 2003-04-16 16:03:57 |
+|   6 | deserunt     | 1995-05-14 21:43:16 | 2013-05-03 18:32:36 |
+|   7 | a            | 1992-05-18 09:39:05 | 2011-01-22 16:57:33 |
+|   8 | alias        | 1982-07-03 02:36:56 | 2017-02-28 07:25:33 |
+|   9 | molestiae    | 1997-02-02 03:45:00 | 2012-01-24 02:13:14 |
+|  10 | cum          | 1985-02-27 03:55:38 | 1973-05-30 01:55:53 |
+|  11 | qui          | 1996-05-08 02:18:31 | 2017-05-03 09:56:00 |
+|  12 | et           | 1984-01-29 19:24:38 | 1976-03-23 11:59:34 |
+|  13 | aliquid      | 2001-06-21 14:59:45 | 1985-01-07 12:48:02 |
+|  14 | sint         | 2019-08-23 08:46:30 | 2002-09-30 22:53:52 |
+|  15 | inventore    | 2001-11-16 18:09:04 | 1987-12-05 02:33:49 |
+|  16 | ducimus      | 2013-10-05 16:44:11 | 1980-05-28 05:32:17 |
+|  17 | sequi        | 1992-05-28 20:34:03 | 2011-07-10 23:42:22 |
+|  18 | magni        | 2012-04-06 16:32:50 | 1970-11-14 08:38:56 |
+|  19 | illo         | 1987-11-06 17:23:20 | 1982-07-16 22:58:22 |
+|  20 | expedita     | 1993-08-05 03:42:08 | 2008-01-23 06:51:45 |
+|  21 | facere       | 1981-06-15 04:10:06 | 1997-02-22 19:16:15 |
+|  22 | possimus     | 1970-04-02 15:12:52 | 1974-03-18 00:14:39 |
+|  23 | in           | 1987-05-21 05:54:39 | 2000-05-09 15:27:12 |
+|  24 | sunt         | 2011-12-19 05:26:06 | 2017-12-18 00:53:46 |
+|  25 | aperiam      | 2003-12-20 09:02:50 | 2002-06-13 02:27:06 |
+|  26 | quod         | 2019-08-24 04:41:54 | 1987-10-04 22:39:04 |
+|  27 | ratione      | 1973-03-20 21:50:59 | 2012-06-30 16:30:46 |
+|  28 | laborum      | 1975-12-09 22:48:28 | 1973-06-12 09:36:50 |
+|  29 | blanditiis   | 2020-07-04 01:22:34 | 1982-12-21 17:53:35 |
+|  30 | commodi      | 2013-01-25 09:52:30 | 2015-01-07 08:50:21 |
+|  31 | recusandae   | 1986-04-07 13:19:03 | 1971-08-28 16:14:12 |
+|  32 | voluptas     | 1986-08-04 06:30:17 | 2000-02-13 03:26:45 |
+|  33 | aliquam      | 2002-04-30 19:09:12 | 1988-11-18 08:47:03 |
+|  34 | aspernatur   | 1973-06-15 21:02:33 | 1975-09-22 08:04:54 |
+|  35 | cupiditate   | 2011-04-05 21:37:21 | 2012-10-06 13:24:01 |
+|  36 | sed          | 2015-09-30 09:56:35 | 1971-10-27 11:57:02 |
+|  37 | nulla        | 2000-03-19 12:20:06 | 2006-07-14 13:40:33 |
+|  38 | debitis      | 1999-12-08 20:50:15 | 1970-09-22 04:39:38 |
+|  39 | dolore       | 1979-09-27 07:23:42 | 1981-04-29 01:33:53 |
+|  40 | libero       | 1979-04-10 22:55:54 | 1985-07-23 10:54:47 |
+|  41 | quia         | 1984-11-20 07:54:50 | 1990-07-02 19:52:58 |
+|  42 | est          | 1989-04-20 21:18:29 | 1991-06-28 20:57:01 |
+|  43 | labore       | 1988-08-15 14:05:38 | 1977-02-03 18:11:53 |
+|  44 | dolorem      | 2015-01-25 20:59:22 | 1988-04-15 15:24:19 |
+|  45 | asperiores   | 2009-02-11 19:50:28 | 1995-04-27 21:06:18 |
+|  46 | voluptates   | 2008-04-09 13:05:14 | 2016-09-25 14:50:39 |
+|  47 | odit         | 2013-06-03 21:17:32 | 1983-06-13 18:43:08 |
+|  48 | nesciunt     | 2013-12-07 05:13:23 | 2009-10-19 00:39:28 |
+|  49 | voluptatibus | 2004-12-28 21:43:20 | 2005-01-11 02:04:55 |
+|  50 | provident    | 1971-07-08 15:59:14 | 2018-01-22 05:04:09 |
+|  51 | nemo         | 1975-07-07 14:32:51 | 2018-08-16 19:19:04 |
+|  52 | nobis        | 1994-03-28 16:22:05 | 1999-10-27 22:58:20 |
+|  53 | veniam       | 1998-08-09 12:28:22 | 2005-09-02 05:58:26 |
+|  54 | reiciendis   | 1974-05-15 21:43:58 | 2011-03-09 01:21:56 |
+|  55 | tenetur      | 1993-04-04 04:39:12 | 1991-10-25 05:08:22 |
+|  56 | excepturi    | 2004-08-20 05:17:24 | 2006-09-28 23:15:37 |
+|  57 | ipsam        | 1996-04-06 17:35:27 | 2019-06-30 00:41:05 |
+|  58 | perspiciatis | 1973-10-16 11:16:05 | 1985-11-11 08:41:58 |
+|  59 | quae         | 2014-08-15 07:54:41 | 1971-07-25 11:17:13 |
+|  60 | ea           | 2014-05-28 18:14:38 | 1996-06-14 20:50:39 |
+|  61 | ut           | 1982-02-08 15:04:18 | 1990-01-27 08:44:26 |
+|  62 | incidunt     | 2013-04-18 20:40:48 | 1998-05-16 04:36:47 |
+|  63 | consequuntur | 2002-12-05 23:00:07 | 2002-09-19 20:58:46 |
+|  64 | cumque       | 1994-03-04 12:51:31 | 2010-10-16 06:15:31 |
+|  65 | occaecati    | 1974-09-02 10:04:11 | 2016-08-09 16:24:47 |
+|  66 | fuga         | 1993-01-31 20:08:08 | 1998-05-28 18:03:28 |
+|  67 | eos          | 1991-07-20 00:45:26 | 2009-05-31 00:59:43 |
+|  68 | assumenda    | 1984-10-24 16:36:17 | 1988-09-16 17:24:04 |
+|  69 | consequatur  | 1982-12-18 19:15:03 | 1987-08-20 21:57:04 |
+|  70 | aut          | 2007-09-10 09:24:41 | 2005-09-30 15:57:34 |
+|  71 | culpa        | 2007-02-13 05:59:02 | 2019-09-10 21:49:13 |
+|  72 | nihil        | 1985-11-30 12:40:54 | 2017-08-26 09:45:33 |
+|  73 | suscipit     | 2015-12-09 03:07:56 | 1991-02-03 18:26:01 |
+|  74 | itaque       | 1971-08-24 23:07:10 | 1994-06-12 11:08:17 |
+|  75 | voluptatem   | 2019-07-24 10:32:03 | 1989-08-04 07:50:18 |
+|  76 | at           | 2008-10-04 20:31:05 | 1972-08-10 11:07:06 |
+|  77 | omnis        | 2015-08-01 12:41:06 | 1998-05-15 10:57:31 |
+|  78 | dignissimos  | 1979-09-07 09:54:39 | 1989-11-28 11:08:15 |
+|  79 | fugiat       | 2005-10-11 18:04:55 | 2008-11-19 19:30:16 |
+|  80 | minima       | 1997-08-05 12:07:06 | 2007-01-25 23:28:43 |
+|  81 | adipisci     | 2015-03-11 19:44:59 | 1995-07-04 09:07:30 |
+|  82 | rerum        | 1992-04-14 09:30:17 | 2008-01-28 15:58:21 |
+|  83 | dolorum      | 2015-12-09 03:14:32 | 2019-02-12 03:52:47 |
+|  84 | distinctio   | 2016-11-07 11:44:39 | 1981-02-26 05:22:02 |
+|  85 | ipsum        | 2017-07-23 08:47:53 | 2006-12-29 16:11:06 |
+|  86 | saepe        | 2018-10-15 21:24:23 | 2006-02-27 12:08:53 |
+|  87 | animi        | 1999-07-21 16:31:38 | 2011-05-25 15:25:06 |
+|  88 | ex           | 1973-04-05 07:12:25 | 2001-06-07 00:51:55 |
+|  89 | repellendus  | 2019-11-29 17:17:22 | 2008-05-05 17:38:49 |
+|  90 | earum        | 2012-05-16 13:23:58 | 2005-10-03 17:38:30 |
+|  91 | doloribus    | 1990-04-25 11:26:49 | 2001-10-10 23:47:20 |
+|  92 | odio         | 1990-07-21 09:54:36 | 1991-07-22 06:09:57 |
+|  93 | totam        | 2019-08-28 11:43:49 | 2003-10-26 18:27:45 |
+|  94 | modi         | 1971-05-12 16:14:22 | 2010-03-02 02:42:09 |
+|  95 | perferendis  | 2019-09-04 10:33:25 | 2004-10-22 21:32:11 |
+|  96 | eveniet      | 1978-12-20 00:25:20 | 1989-08-03 16:56:05 |
+|  97 | nisi         | 2012-04-22 18:50:29 | 2005-02-07 23:59:50 |
+|  98 | explicabo    | 2008-09-25 06:30:22 | 1994-12-03 15:10:04 |
+|  99 | sit          | 2015-10-27 02:07:18 | 1995-01-21 11:49:57 |
+| 100 | voluptate    | 1974-11-01 14:00:24 | 2012-07-30 08:56:48 |
++-----+--------------+---------------------+---------------------+
+100 rows in set (0.00 sec)
+
+mysql> DELETE FROM media_types;
+Query OK, 100 rows affected (0.30 sec)
+
+mysql> INSERT INTO media_types (name) VALUES
+    ->   ('photo'),
+    ->   ('video'),
+    ->   ('audio')
+    -> ;
+Query OK, 3 rows affected (0.03 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> TRUNCATE media_types;
+Query OK, 0 rows affected (0.23 sec)
+
+mysql> SELECT * FROM media LIMIT 10;
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+| id | user_id | filename | size     | metadata | media_type_id | created_at          | updated_at          |
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+|  1 |       1 | porro    | 68150616 | NULL     |             0 | 2002-04-10 23:20:30 | 2008-01-30 07:21:36 |
+|  2 |       2 | quas     |      913 | NULL     |             0 | 1987-09-26 09:43:40 | 1993-04-28 13:28:21 |
+|  3 |       3 | sed      |     7463 | NULL     |             0 | 1982-03-24 03:17:22 | 2000-02-26 12:10:41 |
+|  4 |       4 | et       | 98874799 | NULL     |             0 | 1985-11-02 18:15:51 | 2005-09-21 22:49:51 |
+|  5 |       5 | modi     |        9 | NULL     |             0 | 1971-06-03 02:59:28 | 1977-01-31 15:22:00 |
+|  6 |       6 | impedit  |       86 | NULL     |             0 | 1996-01-27 11:58:24 | 2011-08-16 02:17:34 |
+|  7 |       7 | sint     |        0 | NULL     |             0 | 2015-07-06 10:00:36 | 1971-07-03 08:22:18 |
+|  8 |       8 | animi    |        4 | NULL     |             0 | 2016-03-15 13:39:17 | 2002-04-07 09:48:09 |
+|  9 |       9 | fugit    |        0 | NULL     |             0 | 1972-01-19 02:48:18 | 1991-03-17 10:23:53 |
+| 10 |      10 | impedit  |    41773 | NULL     |             0 | 2003-04-21 18:15:18 | 2013-04-02 04:51:20 |
++----+---------+----------+----------+----------+---------------+---------------------+---------------------+
+10 rows in set (0.02 sec)
+
+mysql> ALTER TABLE media RENAME COLUMN filename TO filepath;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'COLUMN filename TO filepath' at line 1
+mysql> UPDATE media SET media_type_id = FLOOR(1 + RAND() * 3);
+ 100);Query OK, 100 rows affected (0.11 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> UPDATE media SET user_id = FLOOR(1 + RAND() * 100);
+Query OK, 99 rows affected (0.04 sec)
+Rows matched: 100  Changed: 99  Warnings: 0
+
+mysql> CREATE TEMPORARY TABLE extensions (name VARCHAR(10));
+Query OK, 0 rows affected (0.08 sec)
+
+mysql> INSERT INTO extensions VALUES ('jpeg'), ('avi'), ('mpeg'), ('png');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM extensions;
++------+
+| name |
++------+
+| jpeg |
+| avi  |
+| mpeg |
+| png  |
++------+
+4 rows in set (0.01 sec)
+
+mysql> UPDATE media SET filename = CONCAT(
+    -> filename,
+   filename,
+    ->  (SELECT last_  (SELECT last_name FROM users ORDER BY RAND() LIMIT 1),
+    ->   '.',
+LIM    -> IT  (SELECT name FROM extensions ORDER BY RAND() LIMIT 1)
+    -> );
+Query OK, 100 rows affected (0.28 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> UPDATE media SET size = FLOOR(10000 + (RAND() * 1000000)) WHERE size < 1000;
+Query OK, 39 rows affected (0.16 sec)
+Rows matched: 39  Changed: 39  Warnings: 0
+
+mysql> UPDATE media SET metadata = CONCAT('{"owner":"',
+    ->   (SELECT CONCAT(first_name, ' ', last_name) FROM users WHERE id = user_id),
+    ->   '"}');
+Query OK, 100 rows affected (0.10 sec)
+Rows matched: 100  Changed: 100  Warnings: 0
+
+mysql> ALTER TABLE media MODIFY COLUMN metadata JSON;
+Query OK, 100 rows affected (1.48 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+mysql> DESC friendship;
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| Field        | Type             | Null | Key | Default           | Extra                       |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| user_id      | int(10) unsigned | NO   | PRI | NULL              |                             |
+| friend_id    | int(10) unsigned | NO   | PRI | NULL              |                             |
+| status_id    | int(10) unsigned | NO   |     | NULL              |                             |
+| requested_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| confirmed_at | datetime         | YES  |     | NULL              |                             |
+| created_at   | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at   | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+7 rows in set (0.05 sec)
+
+mysql> SELECT * FROM friendship LIMIT 10;
++---------+-----------+-----------+---------------------+---------------------+---------------------+---------------------+
+| user_id | friend_id | status_id | requested_at        | confirmed_at        | created_at          | updated_at          |
++---------+-----------+-----------+---------------------+---------------------+---------------------+---------------------+
+|       1 | 307155925 |   4264751 | 1977-07-03 13:42:06 | 1974-12-06 15:00:15 | 1970-05-31 02:35:49 | 2014-02-09 05:04:55 |
+|       2 |       409 |    601279 | 1995-05-29 23:11:06 | 1975-08-17 14:01:07 | 1982-06-09 04:19:28 | 1982-01-12 08:26:42 |
+|       3 |       120 |         2 | 1981-03-28 21:03:17 | 1972-02-06 14:25:21 | 1994-06-16 18:26:04 | 1990-05-10 10:29:55 |
+|       4 |  20548905 |   9246676 | 1989-11-11 23:16:17 | 1975-06-13 20:22:13 | 1995-09-16 15:44:44 | 2006-09-24 13:30:20 |
+|       5 |         0 |       498 | 2014-07-10 22:33:09 | 1982-05-07 11:35:39 | 2000-09-23 08:32:18 | 2008-10-20 17:08:46 |
+|       6 |        57 |       280 | 2006-06-27 04:27:10 | 1986-04-25 20:10:39 | 2012-04-02 16:06:08 | 2003-05-12 10:05:53 |
+|       7 | 210645547 |  24229060 | 1992-08-13 14:54:56 | 2002-01-04 12:02:49 | 2009-04-14 18:45:31 | 1971-07-04 18:36:40 |
+|       8 |         0 |   1076953 | 1982-06-12 09:38:50 | 1990-05-31 12:07:35 | 2007-12-02 16:33:42 | 1986-12-23 07:25:17 |
+|       9 |         0 |       275 | 2011-07-15 11:31:46 | 1979-11-09 23:16:56 | 1976-02-08 23:52:15 | 2012-03-10 05:50:18 |
+|      10 |   1089563 |       630 | 1989-03-30 04:51:28 | 1994-12-16 19:34:49 | 2011-03-29 18:48:39 | 2005-03-23 14:53:57 |
++---------+-----------+-----------+---------------------+---------------------+---------------------+---------------------+
+10 rows in set (0.01 sec)
+
+mysql> UPDATE friendship SET
+    ->   user_id = FLOOR(1 + RAND() * 100),
+    ->   friend_id   friend_id = FLOOR(1 + RAND() * 100);
+ERROR 1062 (23000): Duplicate entry '98-53' for key 'PRIMARY'
+mysql> UPDATE friendship SET friend_id = friend_id + 1 WHERE user_id = friend_id;
+Query OK, 0 rows affected (0.01 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql> SELECT * FROM friendship_statuses;
++-----+---------------+---------------------+---------------------+
+| id  | name          | created_at          | updated_at          |
++-----+---------------+---------------------+---------------------+
+|   1 | hic           | 2000-03-05 12:08:21 | 1983-01-02 10:22:33 |
+|   2 | eveniet       | 1979-07-12 22:07:36 | 2018-02-28 23:37:13 |
+|   3 | aut           | 2005-07-20 06:27:30 | 1975-03-24 15:02:57 |
+|   4 | eaque         | 2018-09-15 16:03:16 | 1980-02-21 07:50:16 |
+|   5 | quasi         | 1985-12-19 19:39:36 | 1994-03-30 01:13:04 |
+|   6 | voluptate     | 1999-05-16 05:47:59 | 2010-08-15 21:32:05 |
+|   7 | aliquid       | 1980-01-12 14:27:36 | 2006-11-26 21:32:00 |
+|   8 | tempore       | 2018-12-18 12:45:07 | 1978-05-05 10:20:06 |
+|   9 | eligendi      | 2016-03-15 23:16:31 | 2008-10-23 16:53:28 |
+|  10 | dolorem       | 1983-01-16 16:14:54 | 2001-03-10 04:37:04 |
+|  11 | alias         | 1974-04-12 14:30:35 | 2018-08-25 21:33:43 |
+|  12 | ex            | 1999-06-20 18:40:34 | 2017-10-23 12:04:30 |
+|  13 | maxime        | 2004-12-19 19:17:21 | 2011-05-16 13:21:20 |
+|  14 | quod          | 1990-03-06 21:10:48 | 2015-10-11 04:20:31 |
+|  15 | fugiat        | 2000-08-06 11:44:48 | 1995-10-11 19:16:55 |
+|  16 | illum         | 2013-06-25 09:43:26 | 2004-08-23 07:43:03 |
+|  17 | nemo          | 1981-04-26 07:24:37 | 1977-09-16 00:00:04 |
+|  18 | laudantium    | 1970-09-10 14:01:14 | 1983-08-23 18:50:22 |
+|  19 | accusantium   | 2019-01-21 05:02:31 | 1975-06-22 14:09:19 |
+|  20 | voluptatem    | 1976-11-01 01:29:54 | 1998-12-31 10:13:14 |
+|  21 | sint          | 2007-03-06 12:55:01 | 1973-04-25 23:36:26 |
+|  22 | eum           | 2009-08-27 06:32:02 | 1995-01-17 14:12:23 |
+|  23 | qui           | 1983-08-22 14:10:39 | 2001-12-24 08:22:41 |
+|  24 | praesentium   | 1998-08-09 20:04:12 | 2019-06-15 04:43:51 |
+|  25 | officiis      | 2017-06-14 22:19:01 | 2018-09-21 03:36:34 |
+|  26 | nulla         | 1970-03-22 01:53:50 | 2008-06-09 23:53:24 |
+|  27 | voluptates    | 2020-04-25 03:13:16 | 2002-12-21 23:49:03 |
+|  28 | sed           | 1980-09-15 08:23:58 | 1990-02-23 18:34:46 |
+|  29 | et            | 1975-12-12 17:13:33 | 2020-07-01 09:45:31 |
+|  30 | sit           | 2005-05-15 20:14:44 | 1974-01-07 16:45:06 |
+|  31 | saepe         | 2016-12-19 10:43:54 | 1998-03-20 19:20:18 |
+|  32 | velit         | 1977-06-02 07:48:19 | 1971-04-15 06:30:18 |
+|  33 | corrupti      | 1998-03-31 12:20:12 | 1990-01-02 07:06:30 |
+|  34 | rerum         | 1988-08-16 12:45:40 | 1989-11-03 15:56:46 |
+|  35 | tempora       | 2005-08-12 23:05:44 | 1999-04-06 06:13:23 |
+|  36 | reiciendis    | 1999-06-06 19:25:05 | 1982-07-26 01:45:38 |
+|  37 | ad            | 1992-09-21 16:48:57 | 1997-06-12 16:31:54 |
+|  38 | ducimus       | 1970-09-03 13:25:16 | 2000-03-21 11:29:35 |
+|  39 | similique     | 1982-01-16 05:39:29 | 1996-10-27 00:14:26 |
+|  40 | soluta        | 1990-08-27 12:47:37 | 1987-11-15 02:57:33 |
+|  41 | quo           | 2003-10-03 10:34:39 | 2003-09-25 22:40:01 |
+|  42 | nam           | 1998-09-21 13:10:32 | 1985-07-07 18:16:50 |
+|  43 | assumenda     | 2015-03-27 19:51:08 | 1986-04-04 02:09:56 |
+|  44 | consequuntur  | 2005-08-20 17:31:27 | 1971-09-03 16:40:26 |
+|  45 | facere        | 2002-01-28 03:00:49 | 2003-03-08 03:50:24 |
+|  46 | officia       | 2006-09-28 19:21:42 | 1999-04-25 23:13:02 |
+|  47 | aperiam       | 1998-11-21 06:48:50 | 1997-10-30 16:10:48 |
+|  48 | minima        | 2019-11-17 21:29:34 | 1978-06-12 19:57:08 |
+|  49 | suscipit      | 1974-11-26 00:01:49 | 1997-07-27 18:12:03 |
+|  50 | ut            | 1982-09-15 06:32:56 | 1974-06-28 02:52:02 |
+|  51 | ea            | 1991-09-20 20:56:57 | 1975-06-07 21:07:23 |
+|  52 | temporibus    | 2006-03-15 13:32:38 | 1978-02-22 11:17:45 |
+|  53 | facilis       | 1987-03-09 06:39:06 | 1984-12-08 18:15:41 |
+|  54 | architecto    | 1994-10-30 14:20:38 | 1993-08-19 23:05:05 |
+|  55 | ratione       | 1972-12-26 18:01:04 | 2007-04-28 04:10:32 |
+|  56 | dolor         | 2008-11-20 22:17:38 | 1990-01-06 18:53:30 |
+|  57 | quidem        | 1985-04-28 02:25:06 | 2016-06-13 16:02:27 |
+|  58 | harum         | 1982-02-03 13:16:23 | 1995-06-07 23:12:20 |
+|  59 | voluptas      | 2011-03-26 04:15:09 | 1987-04-30 15:15:55 |
+|  60 | est           | 2017-09-28 18:34:44 | 2015-10-07 15:24:34 |
+|  61 | omnis         | 1974-04-28 18:59:37 | 1978-07-04 14:40:18 |
+|  62 | consequatur   | 1992-06-28 01:21:56 | 2007-04-23 04:34:58 |
+|  63 | enim          | 1977-06-15 14:35:19 | 2018-09-25 09:36:02 |
+|  64 | sequi         | 2000-11-13 18:12:30 | 1994-04-30 10:10:58 |
+|  65 | labore        | 2015-01-31 12:06:44 | 1976-04-08 02:38:12 |
+|  66 | beatae        | 1998-10-18 11:58:22 | 1975-06-25 03:33:30 |
+|  67 | esse          | 1978-04-28 19:40:16 | 2001-06-14 06:13:51 |
+|  68 | cupiditate    | 1999-08-16 10:24:57 | 1977-10-09 19:38:40 |
+|  69 | laborum       | 2020-06-18 17:14:04 | 1976-11-07 04:41:45 |
+|  70 | aspernatur    | 2004-03-23 16:47:03 | 1990-06-08 09:58:59 |
+|  71 | natus         | 1993-04-05 14:06:01 | 1989-10-01 21:05:15 |
+|  72 | adipisci      | 2003-03-14 03:02:40 | 1979-05-07 17:02:49 |
+|  73 | deleniti      | 2002-12-10 23:23:50 | 2020-03-08 04:06:17 |
+|  74 | at            | 2002-10-13 17:26:49 | 1984-07-24 20:08:06 |
+|  75 | laboriosam    | 2007-07-10 03:44:23 | 2015-03-16 12:02:25 |
+|  76 | reprehenderit | 1991-02-19 19:21:09 | 1983-11-16 11:48:36 |
+|  77 | voluptatibus  | 1970-03-11 23:38:08 | 1979-08-11 06:09:29 |
+|  78 | expedita      | 1972-07-06 06:26:02 | 2016-03-26 22:14:05 |
+|  79 | aliquam       | 1983-01-14 19:54:11 | 1990-12-01 22:51:48 |
+|  80 | debitis       | 2018-12-22 03:49:48 | 1996-02-27 04:18:57 |
+|  81 | vitae         | 2015-01-26 17:37:12 | 1997-07-31 00:50:09 |
+|  82 | incidunt      | 1975-05-24 16:51:36 | 1979-12-20 04:10:43 |
+|  83 | quisquam      | 1995-03-29 11:33:07 | 1995-10-22 11:34:50 |
+|  84 | recusandae    | 1988-03-15 11:12:04 | 1990-12-26 19:21:52 |
+|  85 | odio          | 2010-11-02 15:33:26 | 1971-08-08 23:51:26 |
+|  86 | blanditiis    | 1985-07-06 20:42:49 | 1975-04-15 12:28:36 |
+|  87 | quia          | 1970-04-24 14:37:26 | 1972-07-13 23:52:34 |
+|  88 | ipsum         | 2010-11-03 19:34:18 | 1988-07-30 02:21:37 |
+|  89 | dolorum       | 1988-07-11 11:37:26 | 1976-01-09 05:02:18 |
+|  90 | veritatis     | 1993-12-04 18:19:43 | 2004-02-14 16:10:43 |
+|  91 | nisi          | 2000-03-20 16:41:30 | 2010-08-31 10:54:13 |
+|  92 | eos           | 2010-01-28 07:53:52 | 1980-03-21 23:41:25 |
+|  93 | molestiae     | 1975-09-10 15:00:04 | 2014-05-18 23:30:25 |
+|  94 | vero          | 1978-05-27 00:56:15 | 2014-06-01 18:40:13 |
+|  95 | magnam        | 1994-07-07 05:54:57 | 2006-02-07 01:29:16 |
+|  96 | autem         | 1993-12-20 16:37:19 | 1970-01-16 09:51:01 |
+|  97 | non           | 1999-09-21 21:12:29 | 1988-03-09 09:27:30 |
+|  98 | tenetur       | 2008-09-19 16:20:28 | 1998-09-28 23:27:59 |
+|  99 | repudiandae   | 2011-05-20 09:45:36 | 2001-08-27 05:56:44 |
+| 100 | dignissimos   | 1989-10-24 06:22:04 | 1984-07-25 19:13:50 |
++-----+---------------+---------------------+---------------------+
+100 rows in set (0.01 sec)
+
+mysql> TRUNCATE friendship_statuses;
+Query OK, 0 rows affected (0.44 sec)
+
+mysql> INSERT INTO friendship_statuses (name) VALUES
+    ->   ('Requested'),
+    ->   ('Confirmed'),
+    ->   ('Rejected');
+Query OK, 3 rows affected (0.05 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> UPDATE friendship SET status_id = FLOOR(1 + RAND() * 3);
+Query OK, 97 rows affected (0.08 sec)
+Rows matched: 100  Changed: 97  Warnings: 0
+
+mysql> DESC communities;
++------------+------------------+------+-----+-------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default           | Extra                       |
++------------+------------------+------+-----+-------------------+-----------------------------+
+| id         | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| name       | varchar(150)     | NO   | UNI | NULL              |                             |
+| created_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++------------+------------------+------+-----+-------------------+-----------------------------+
+4 rows in set (0.07 sec)
+
+mysql> SELECT * FROM communities;
++-----+---------------+---------------------+---------------------+
+| id  | name          | created_at          | updated_at          |
++-----+---------------+---------------------+---------------------+
+|   1 | totam         | 1993-05-06 02:26:09 | 1998-08-02 18:35:46 |
+|   2 | accusantium   | 2004-04-22 10:44:52 | 2019-05-20 18:47:15 |
+|   3 | facilis       | 2004-05-17 03:22:50 | 2012-05-12 09:05:55 |
+|   4 | suscipit      | 2001-04-06 21:32:56 | 1998-10-25 10:45:53 |
+|   5 | minus         | 1995-04-02 11:22:39 | 2011-06-17 09:56:24 |
+|   6 | qui           | 1981-04-19 18:25:02 | 1991-10-22 13:37:50 |
+|   7 | eligendi      | 1973-10-02 21:52:54 | 1996-03-31 00:18:24 |
+|   8 | vel           | 2002-07-09 02:44:48 | 2013-07-31 01:46:50 |
+|   9 | cupiditate    | 1973-06-24 06:47:58 | 2000-01-20 04:52:51 |
+|  10 | at            | 2002-06-19 03:27:32 | 1994-02-14 16:45:48 |
+|  11 | corrupti      | 2001-02-11 13:23:27 | 2004-05-25 05:41:01 |
+|  12 | a             | 1981-04-05 08:38:51 | 1986-12-03 08:46:53 |
+|  13 | alias         | 1982-02-15 14:10:16 | 1982-04-07 20:54:40 |
+|  14 | et            | 2019-04-30 04:16:06 | 1999-06-16 05:50:43 |
+|  15 | molestiae     | 2015-12-07 01:50:47 | 1974-07-08 13:15:14 |
+|  16 | aut           | 1972-09-15 20:03:12 | 1980-11-22 17:56:45 |
+|  17 | voluptatem    | 1988-05-26 07:28:52 | 1975-11-22 15:05:48 |
+|  18 | aliquam       | 1998-04-02 14:34:50 | 1985-02-27 19:40:41 |
+|  19 | velit         | 1972-12-20 11:39:10 | 2009-05-06 06:34:04 |
+|  20 | voluptates    | 1977-04-20 18:59:52 | 2000-08-27 17:11:17 |
+|  21 | accusamus     | 1995-05-24 13:26:01 | 1984-08-13 06:11:13 |
+|  22 | itaque        | 2003-11-27 03:06:55 | 2020-05-24 09:06:08 |
+|  23 | ratione       | 1983-03-26 16:57:51 | 2001-08-04 02:10:25 |
+|  24 | consequatur   | 2006-11-23 22:21:20 | 1990-10-04 18:23:26 |
+|  25 | laboriosam    | 2006-06-25 19:36:15 | 1976-08-17 02:26:40 |
+|  26 | similique     | 1980-12-01 12:30:42 | 1982-09-25 13:21:26 |
+|  27 | laborum       | 1985-09-15 01:35:30 | 2003-11-09 16:20:48 |
+|  28 | rerum         | 2017-03-10 18:44:47 | 1980-09-13 15:33:55 |
+|  29 | laudantium    | 1993-11-11 09:08:57 | 2004-12-29 20:35:09 |
+|  30 | est           | 1987-12-20 07:36:54 | 1996-02-18 19:45:17 |
+|  31 | reiciendis    | 1971-01-20 00:19:41 | 1993-05-29 11:57:09 |
+|  32 | ut            | 1989-06-16 17:53:31 | 2010-11-24 02:40:32 |
+|  33 | unde          | 1987-06-19 00:55:51 | 1974-03-18 23:39:11 |
+|  34 | non           | 1994-08-28 18:28:48 | 2013-06-24 20:11:49 |
+|  35 | sapiente      | 2010-07-05 05:15:36 | 1981-12-12 19:49:10 |
+|  36 | assumenda     | 2001-09-02 20:52:25 | 2010-02-04 10:26:53 |
+|  37 | recusandae    | 1987-09-22 23:08:35 | 2020-05-12 02:01:06 |
+|  38 | tenetur       | 2016-10-01 18:46:36 | 1974-02-24 18:52:37 |
+|  39 | autem         | 1991-10-08 17:04:51 | 2019-06-05 16:03:01 |
+|  40 | quis          | 2001-01-11 11:17:59 | 2009-02-05 23:52:06 |
+|  41 | dolore        | 1996-07-31 12:17:57 | 2002-09-18 02:41:37 |
+|  42 | atque         | 1989-01-04 07:14:16 | 2015-01-13 13:59:21 |
+|  43 | repellat      | 1999-08-17 07:02:24 | 1973-10-25 04:13:40 |
+|  44 | doloremque    | 2011-08-11 20:21:53 | 2001-06-24 15:25:17 |
+|  45 | repudiandae   | 1970-03-01 16:20:04 | 1987-05-23 06:42:56 |
+|  46 | eum           | 2019-04-18 03:08:55 | 2020-02-20 16:56:27 |
+|  47 | libero        | 1970-12-26 19:36:15 | 1981-01-17 08:57:15 |
+|  48 | nihil         | 2019-05-19 17:32:04 | 2014-10-23 08:40:26 |
+|  49 | deleniti      | 1991-06-03 23:33:12 | 2005-03-10 07:30:26 |
+|  50 | optio         | 1983-10-16 08:07:58 | 1973-10-13 08:21:31 |
+|  51 | dolorem       | 1997-11-01 18:28:09 | 2002-07-19 14:07:26 |
+|  52 | sequi         | 2017-02-28 09:38:54 | 1986-05-14 20:20:55 |
+|  53 | culpa         | 1973-08-02 18:42:57 | 1987-12-18 12:10:29 |
+|  54 | dolorum       | 2008-10-12 11:56:49 | 1995-04-08 13:54:41 |
+|  55 | porro         | 2006-10-24 22:46:12 | 1987-03-22 09:26:14 |
+|  56 | cumque        | 1974-01-11 02:19:49 | 1976-08-10 19:49:48 |
+|  57 | numquam       | 2013-02-12 08:50:25 | 1986-05-06 06:34:52 |
+|  58 | id            | 1974-10-22 12:40:07 | 1993-06-14 12:37:26 |
+|  59 | possimus      | 1977-08-31 11:41:18 | 2006-10-24 03:56:55 |
+|  60 | illum         | 1998-10-07 11:02:27 | 1994-09-04 12:57:36 |
+|  61 | quibusdam     | 1996-09-10 18:45:50 | 1980-10-05 00:05:41 |
+|  62 | aliquid       | 1992-06-02 21:10:55 | 1971-02-13 14:44:18 |
+|  63 | consectetur   | 1992-04-05 09:12:28 | 2001-03-16 22:10:52 |
+|  64 | quasi         | 1970-08-05 07:09:04 | 1975-12-28 07:42:57 |
+|  65 | omnis         | 2008-11-27 18:19:12 | 2001-11-11 21:59:34 |
+|  66 | natus         | 1981-01-04 20:23:31 | 1975-07-06 11:10:10 |
+|  67 | placeat       | 1992-07-08 09:45:12 | 1978-07-13 18:56:14 |
+|  68 | voluptate     | 2005-02-27 15:52:15 | 1991-03-18 09:36:17 |
+|  69 | mollitia      | 1978-02-06 22:38:41 | 2003-03-17 18:08:24 |
+|  70 | quisquam      | 2016-03-26 15:25:51 | 1980-05-12 07:30:04 |
+|  71 | quia          | 1988-02-21 11:08:28 | 2017-11-21 05:42:44 |
+|  72 | veniam        | 1980-02-29 20:13:49 | 1988-03-30 15:59:23 |
+|  73 | quaerat       | 2016-12-06 23:56:32 | 1994-03-24 08:52:07 |
+|  74 | enim          | 1978-03-02 06:20:59 | 1987-02-25 03:20:20 |
+|  75 | reprehenderit | 1980-05-25 16:37:30 | 1983-08-12 00:51:18 |
+|  76 | ad            | 1985-11-13 18:46:03 | 1998-05-21 13:07:01 |
+|  77 | blanditiis    | 1983-05-27 23:51:31 | 1972-09-21 19:29:54 |
+|  78 | temporibus    | 2002-10-14 05:09:13 | 1988-12-27 22:26:11 |
+|  79 | minima        | 2013-01-26 06:50:57 | 2005-04-23 17:07:44 |
+|  80 | fugiat        | 1979-09-25 01:19:14 | 1978-12-02 04:42:25 |
+|  81 | voluptas      | 2009-09-05 01:23:42 | 2002-08-19 12:17:56 |
+|  82 | delectus      | 2010-02-06 19:55:46 | 2015-03-03 16:30:20 |
+|  83 | rem           | 1989-06-01 05:05:28 | 2002-05-10 10:20:19 |
+|  84 | incidunt      | 2019-04-22 04:29:30 | 1982-11-16 09:33:36 |
+|  85 | nisi          | 1996-02-21 04:00:14 | 2006-06-02 06:46:23 |
+|  86 | perspiciatis  | 2020-06-22 02:05:47 | 1979-05-17 19:54:35 |
+|  87 | facere        | 1986-01-03 05:21:41 | 1986-08-19 15:19:00 |
+|  88 | ea            | 1972-11-15 10:10:12 | 2012-02-23 22:42:49 |
+|  89 | sint          | 2013-09-13 18:08:55 | 2015-10-14 01:28:10 |
+|  90 | aspernatur    | 2000-09-30 16:44:16 | 1979-06-11 07:56:09 |
+|  91 | impedit       | 1996-10-16 11:59:34 | 1972-11-05 08:35:55 |
+|  92 | dolor         | 1996-12-22 12:13:21 | 1999-09-02 08:22:33 |
+|  93 | iure          | 2001-05-08 19:09:52 | 1972-07-06 03:36:54 |
+|  94 | excepturi     | 1990-04-12 02:49:08 | 2006-08-06 22:22:48 |
+|  95 | fuga          | 2012-07-26 22:01:52 | 1996-11-29 04:22:11 |
+|  96 | doloribus     | 1974-07-28 11:34:25 | 2020-01-15 18:35:46 |
+|  97 | quos          | 1983-10-23 19:07:10 | 1977-10-10 17:09:20 |
+|  98 | sed           | 2000-11-15 23:17:08 | 2002-09-06 12:17:46 |
+|  99 | modi          | 2005-02-27 07:32:35 | 1976-09-08 02:20:45 |
+| 100 | illo          | 2006-07-12 05:42:46 | 1981-01-06 15:38:13 |
++-----+---------------+---------------------+---------------------+
+100 rows in set (0.01 sec)
+
+mysql> DELETE FROM communities WHERE id > 20;
+Query OK, 80 rows affected (0.10 sec)
+
+mysql> SELECT * FROM communities_users;
++--------------+---------+---------------------+
+| community_id | user_id | created_at          |
++--------------+---------+---------------------+
+|            1 |       1 | 2004-06-25 10:24:25 |
+|            2 |       2 | 1986-10-04 20:47:21 |
+|            3 |       3 | 1991-10-18 09:56:43 |
+|            4 |       4 | 1978-02-28 20:50:10 |
+|            5 |       5 | 1984-09-06 07:00:45 |
+|            6 |       6 | 1976-01-02 11:39:32 |
+|            7 |       7 | 1973-02-21 11:24:19 |
+|            8 |       8 | 1996-11-03 13:13:07 |
+|            9 |       9 | 1988-08-02 14:54:18 |
+|           10 |      10 | 1996-12-09 18:56:46 |
+|           11 |      11 | 1985-01-12 16:42:22 |
+|           12 |      12 | 2005-06-30 22:15:31 |
+|           13 |      13 | 1973-04-15 06:31:46 |
+|           14 |      14 | 1979-09-11 17:03:00 |
+|           15 |      15 | 1990-05-05 01:53:30 |
+|           16 |      16 | 2000-10-08 03:26:33 |
+|           17 |      17 | 2005-08-21 00:11:12 |
+|           18 |      18 | 2011-06-01 18:13:18 |
+|           19 |      19 | 1982-05-26 09:18:34 |
+|           20 |      20 | 1989-07-16 16:43:10 |
+|           21 |      21 | 2018-03-25 08:16:04 |
+|           22 |      22 | 2016-08-31 05:51:23 |
+|           23 |      23 | 2007-03-31 12:50:18 |
+|           24 |      24 | 1986-05-08 16:35:49 |
+|           25 |      25 | 1971-05-27 00:18:46 |
+|           26 |      26 | 1978-12-22 06:14:48 |
+|           27 |      27 | 2010-05-25 06:16:56 |
+|           28 |      28 | 1983-06-15 01:03:11 |
+|           29 |      29 | 2018-06-22 07:13:20 |
+|           30 |      30 | 2012-10-12 00:19:39 |
+|           31 |      31 | 2020-02-21 18:20:34 |
+|           32 |      32 | 1977-03-22 11:24:41 |
+|           33 |      33 | 2008-09-23 11:40:29 |
+|           34 |      34 | 1983-01-06 14:31:34 |
+|           35 |      35 | 1987-04-17 21:53:09 |
+|           36 |      36 | 1983-07-03 06:54:09 |
+|           37 |      37 | 1977-09-23 10:09:44 |
+|           38 |      38 | 2004-11-06 04:09:42 |
+|           39 |      39 | 1979-01-05 07:49:04 |
+|           40 |      40 | 1977-03-28 18:20:54 |
+|           41 |      41 | 2017-01-14 22:05:11 |
+|           42 |      42 | 1992-05-22 23:36:43 |
+|           43 |      43 | 2017-09-11 03:05:04 |
+|           44 |      44 | 1986-02-05 09:24:15 |
+|           45 |      45 | 1988-01-25 11:59:40 |
+|           46 |      46 | 1980-08-22 09:20:24 |
+|           47 |      47 | 2008-05-31 15:13:07 |
+|           48 |      48 | 1974-08-20 21:46:52 |
+|           49 |      49 | 1977-09-26 20:28:27 |
+|           50 |      50 | 1976-01-26 12:06:23 |
+|           51 |      51 | 2009-06-09 06:45:14 |
+|           52 |      52 | 1979-05-13 18:36:21 |
+|           53 |      53 | 1992-04-03 06:22:29 |
+|           54 |      54 | 2003-08-26 18:58:08 |
+|           55 |      55 | 1972-10-23 02:20:47 |
+|           56 |      56 | 1994-04-19 11:37:02 |
+|           57 |      57 | 2016-02-25 17:48:35 |
+|           58 |      58 | 1984-10-17 17:34:59 |
+|           59 |      59 | 2011-07-14 07:41:31 |
+|           60 |      60 | 2000-12-25 14:14:29 |
+|           61 |      61 | 2016-10-26 13:07:12 |
+|           62 |      62 | 2000-04-17 18:58:11 |
+|           63 |      63 | 2002-12-17 17:05:45 |
+|           64 |      64 | 2010-04-26 08:34:12 |
+|           65 |      65 | 2018-06-08 12:52:46 |
+|           66 |      66 | 1973-10-10 09:10:17 |
+|           67 |      67 | 2016-09-16 02:09:43 |
+|           68 |      68 | 2008-09-09 23:00:56 |
+|           69 |      69 | 2001-05-29 06:43:44 |
+|           70 |      70 | 1971-09-02 06:52:30 |
+|           71 |      71 | 2014-08-26 06:37:40 |
+|           72 |      72 | 2005-06-09 05:19:25 |
+|           73 |      73 | 2002-05-22 03:20:55 |
+|           74 |      74 | 1998-11-01 13:33:13 |
+|           75 |      75 | 1992-03-15 18:49:36 |
+|           76 |      76 | 2019-03-20 04:25:44 |
+|           77 |      77 | 1994-08-27 10:01:43 |
+|           78 |      78 | 1994-07-17 13:08:53 |
+|           79 |      79 | 1997-07-12 14:09:27 |
+|           80 |      80 | 1976-07-23 13:34:07 |
+|           81 |      81 | 2015-04-16 09:11:24 |
+|           82 |      82 | 2019-12-16 01:34:51 |
+|           83 |      83 | 1985-05-06 17:45:58 |
+|           84 |      84 | 1993-02-06 06:08:12 |
+|           85 |      85 | 1979-09-27 22:56:39 |
+|           86 |      86 | 1970-09-18 14:10:52 |
+|           87 |      87 | 2011-03-22 14:58:11 |
+|           88 |      88 | 1991-12-23 23:49:07 |
+|           89 |      89 | 1979-08-13 04:41:42 |
+|           90 |      90 | 1976-08-30 23:32:10 |
+|           91 |      91 | 1974-01-01 18:17:06 |
+|           92 |      92 | 1972-07-29 11:56:27 |
+|           93 |      93 | 2007-06-30 03:57:20 |
+|           94 |      94 | 1982-11-21 11:02:18 |
+|           95 |      95 | 1981-07-23 03:47:58 |
+|           96 |      96 | 1987-10-18 07:47:47 |
+|           97 |      97 | 1987-08-15 05:24:59 |
+|           98 |      98 | 2002-10-09 08:19:27 |
+|           99 |      99 | 2000-12-22 20:06:39 |
+|          100 |     100 | 1984-11-23 22:17:56 |
++--------------+---------+---------------------+
+100 rows in set (0.01 sec)
+
+mysql> UPDATE communities_users SET community_id = FLOOR(1 + RAND() * 20);
+Query OK, 99 rows affected (0.11 sec)
+Rows matched: 100  Changed: 99  Warnings: 0
+
+mysql> HELP SELECT;
+Name: 'SELECT'
+Description:
+Syntax:
+SELECT
+    [ALL | DISTINCT | DISTINCTROW ]
+    [HIGH_PRIORITY]
+    [STRAIGHT_JOIN]
+    [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]
+    [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]
+    select_expr [, select_expr] ...
+    [into_option]
+    [FROM table_references
+      [PARTITION partition_list]]
+    [WHERE where_condition]
+    [GROUP BY {col_name | expr | position}
+      [ASC | DESC], ... [WITH ROLLUP]]
+    [HAVING where_condition]
+    [ORDER BY {col_name | expr | position}
+      [ASC | DESC], ...]
+    [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+    [PROCEDURE procedure_name(argument_list)]
+    [into_option]
+    [FOR UPDATE | LOCK IN SHARE MODE]
+
+into_option: {
+    INTO OUTFILE 'file_name'
+        [CHARACTER SET charset_name]
+        export_options
+  | INTO DUMPFILE 'file_name'
+  | INTO var_name [, var_name] ...
+}
+
+SELECT is used to retrieve rows selected from one or more tables, and
+can include UNION statements and subqueries. See [HELP UNION], and
+https://dev.mysql.com/doc/refman/5.7/en/subqueries.html.
+
+The most commonly used clauses of SELECT statements are these:
+
+o Each select_expr indicates a column that you want to retrieve. There
+  must be at least one select_expr.
+
+o table_references indicates the table or tables from which to retrieve
+  rows. Its syntax is described in [HELP JOIN].
+
+o SELECT supports explicit partition selection using the PARTITION with
+  a list of partitions or subpartitions (or both) following the name of
+  the table in a table_reference (see [HELP JOIN]). In this case, rows
+  are selected only from the partitions listed, and any other
+  partitions of the table are ignored. For more information and
+  examples, see
+  https://dev.mysql.com/doc/refman/5.7/en/partitioning-selection.html.
+
+  SELECT ... PARTITION from tables using storage engines such as MyISAM
+  that perform table-level locks (and thus partition locks) lock only
+  the partitions or subpartitions named by the PARTITION option.
+
+  For more information, see
+  https://dev.mysql.com/doc/refman/5.7/en/partitioning-limitations-lock
+  ing.html.
+
+o The WHERE clause, if given, indicates the condition or conditions
+  that rows must satisfy to be selected. where_condition is an
+  expression that evaluates to true for each row to be selected. The
+  statement selects all rows if there is no WHERE clause.
+
+  In the WHERE expression, you can use any of the functions and
+  operators that MySQL supports, except for aggregate (summary)
+  functions. See
+  https://dev.mysql.com/doc/refman/5.7/en/expressions.html, and
+  https://dev.mysql.com/doc/refman/5.7/en/functions.html.
+
+SELECT can also be used to retrieve rows computed without reference to
+any table.
+
+URL: https://dev.mysql.com/doc/refman/5.7/en/select.html
+
+mysql> exit
+Bye
+
+
+Задание 3:
+(по желанию) Предложить свою реализацию лайков и постов.
+----------------------------------------------------------------------------
+
+mysql> CREATE TABLE authors (
+    -> ) NOT NU  id int(11) NOT NULL AUTO_INCREMENT,
+    ->   first_name varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+    ->   last_name varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+    -> r(100)  email varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+dat    ->   birthdate date NOT NULL,
+    -> ded tim  added timestamp NOT NULL DEFAULT current_timestamp(),
+
+);    ->   PRIMARY KEY (id),
+    ->   UNIQUE KEY email (email)
+    -> );
+Query OK, 0 rows affected (0.61 sec)
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| authors             |
+| cities              |
+| communities         |
+| communities_users   |
+| countries           |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+14 rows in set (0.01 sec)
+
+mysql> CREATE TABLE posts (
+    -> id INT UNSI  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    -> r_id INT UN  user_id INT UNSIGNED NOT NULL,
+    ->   communi  communitie_id INT UNSIGNED NOT NULL,
+    ->   title VARCHAR(255) NOT NULL,
+    ->   body TEXT NOT NULL,
+    ->   important BOOLEAN,
+    ->   delivered BOOLEAN,
+    ->   created_at DATETIME DEFAULT NOW(),
+    ->   updated_at DATETIME DEFAULT NOW() ON UPDATE NOW()
+    -> );
+Query OK, 0 rows affected (0.67 sec)
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_vk        |
++---------------------+
+| communities         |
+| communities_users   |
+| friendship          |
+| friendship_statuses |
+| media               |
+| media_types         |
+| messages            |
+| posts               |
+| profiles            |
+| regions             |
+| users               |
++---------------------+
+11 rows in set (0.01 sec)
+
+mysql> exit
+Bye
+
+anastazia@anastazia-VirtualBox:~$ mysqldump -u root -p vk > vk.dump.sql
+Enter password:
+anastazia@anastazia-VirtualBox:~$
+
+
+Задание 4:
+Подобрать сервис-образец для курсовой работы.
+----------------------------------------------------------------------------
+Думаю, что буду использовать сервис для сайта LimeHD-TV.
