@@ -1,0 +1,416 @@
+
+
+Практические задания по теме «Операторы, фильтрация, сортировка и ограничение».
+Задание 1:
+Пусть в таблице users поля created_at и updated_at оказались незаполненными. 
+Заполните их текущими датой и временем.
+---------------------------------------------------------------------------------
+
+Microsoft Windows [Version 10.0.18362.1016]
+(c) Корпорация Майкрософт (Microsoft Corporation), 2019. Все права защищены.
+
+C:\Users\111>ssh anastazia@192.168.1.7
+anastazia@192.168.1.7's password:
+Welcome to Ubuntu 16.04.6 LTS (GNU/Linux 4.15.0-45-generic i686)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+Могут быть обновлены 394 пакета.
+341 обновление касается безопасности системы.
+
+Last login: Thu Aug 27 15:18:33 2020 from 192.168.1.3
+anastazia@anastazia-VirtualBox:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 26
+Server version: 5.7.31-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE shop;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> USE shop
+Database changed
+
+mysql> CREATE TABLE catalogs (
+    ->   id SERIAL PRIMARY KEY,
+    ->   name VARCHAR(255) COMMENT 'Название раздела',
+    ->   UNIQUE unique_name(name(10))
+    -> ) COMMENT = 'Разделы интернет-магазина';
+Query OK, 0 rows affected (0.96 sec)
+
+mysql> INSERT INTO catalogs VALUES
+    ->   (NULL, 'Процессоры'),
+    ->   (NULL, 'Материнские платы'),
+    ->   (NULL, 'Видеокарты'),
+    ->   (NULL, 'Жесткие диски'),
+    ->   (NULL, 'Оперативная память');
+ERROR 1366 (HY000): Incorrect string value: '\xD0\x9F\xD1\x80\xD0\xBE...' for column 'name' at row 1
+
+mysql> DROP TABLE catalogs;
+Query OK, 0 rows affected (13.90 sec)
+
+mysql> SHOW TABLES;
+Empty set (0.01 sec)
+
+mysql> CREATE TABLE catalogs (
+    -> MENT 'Названи  id SERIAL PRIMARY KEY,
+    ->   name VARBINARY(255) COMMENT 'Название раздела',
+    ->   UNIQUE unique_name(name(10))
+    -> ) COMMENT = 'Разделы интернет-магазина';
+Query OK, 0 rows affected (0.52 sec)
+
+mysql> INSERT INTO catalogs VALUES
+    -> соры')  (NULL, 'Процессоры'),
+кие диски'),
+  (NULL    ->   (NULL, 'Материнские платы'),
+    ->   (NULL, 'Видеокарты'),
+    ->   (NULL, 'Жесткие диски'),
+    ->   (NULL, 'Оперативная память');
+Query OK, 5 rows affected (0.08 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> DROP TABLE IF EXISTS users;
+MENT 'Имя покупателя',Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql>
+ CREATE TABLE users (
+    ->   id SERIAL PRIMARY KEY,
+    ->   name VARCHAR(255) COMMENT 'Имя покупателя',
+    ->   birthday_at DATE COMMENT 'Дата рождения',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Покупатели';
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> INSERT INTO users (name, birthday_at) VALUES
+    -> ан', '1998-01-12'),
+  (  ('Геннадий', '1990-10-05'),
+    ->   ('Наталья', '1984-11-12'),
+    ->   ('Александр', '1985-05-20'),
+    ->   ('Сергей', '1988-02-14'),
+    ->   ('Иван', '1998-01-12'),
+    ->   ('Мария', '1992-08-29');
+ERROR 1366 (HY000): Incorrect string value: '\xC3\xE5\xED\xED\xE0\xE4...' for column 'name' at row 1
+mysql> DROP TABLE users;
+Query OK, 0 rows affected (0.15 sec)
+
+mysql> CREATE TABLE users (
+    ->   id SERIAL PRIMARY KEY,
+    ->   name VARBINARY(255) COMMENT 'Имя покупателя',
+    -> ON UPDATE CURREN  birthday_at DATE COMMENT 'Дата рождения',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Покупатели';
+Query OK, 0 rows affected (0.24 sec)
+
+mysql> INSERT INTO users (name, birthday_at) VALUES
+    -> 'Сергей', '1988-02-14'),
+  ('Иван', '1998-01-12'),
+   ('Геннадий', '1990-10-05'),
+    ->   ('Наталья', '1984-11-12'),
+    ->   ('Александр', '1985-05-20'),
+    ->   ('Сергей', '1988-02-14'),
+    ->   ('Иван', '1998-01-12'),
+    ->   ('Мария', '1992-08-29');
+Query OK, 6 rows affected (0.15 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> DROP TABLE IF EXISTS products;
+55) COMMENT 'Название',
+  descriptioQuery OK, 0 rows affected, 1 warning (0.03 sec)
+
+mysql> CREATE TABLE products (
+price DECIMAL (11,    ->   id SERIAL PRIMARY KEY,
+    -> catalo  name VARBINARY(255) COMMENT 'Название',
+    ->  D  description TEXT COMMENT 'Описание',
+    -> COMMENT = 'Товарные позиции';  price DECIMAL (11,2) COMMENT 'Цена',
+    ->   catalog_id INT UNSIGNED,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   KEY index_of_catalog_id (catalog_id)
+    -> ) COMMENT = 'Товарные позиции';
+Query OK, 0 rows affected (0.18 sec)
+
+mysql> INSERT INTO products
+('Intel Core i3-8100', 'Процессор для настоль    ->   (name, description, price, catalog_id)
+    -> VALUES
+    ->   ('Intel Core i3-8100', 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.', 7890.00, 1),
+    -> 0.00, 2),
+    ('Intel Core i5-7400', 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.', 12700.00, 1),
+    ->   ('AMD FX-8320E', 'Процессор для настольных персональных компьютеров, основанных на платформе AMD.', 4780.00, 1),
+    ->   ('AMD FX-8320', 'Процессор для настольных персональных компьютеров, основанных на платформе AMD.', 7120.00, 1),
+    ->   ('ASUS ROG MAXIMUS X HERO', 'Материнская плата ASUS ROG MAXIMUS X HERO, Z370, Socket 1151-V2, DDR4, ATX', 19310.00, 2),
+    ->   ('Gigabyte H310M S2H', 'Материнская плата Gigabyte H310M S2H, H310, Socket 1151-V2, DDR4, mATX', 4790.00, 2),
+    ->   ('MSI B250M GAMING PRO', 'Материнская плата MSI B250M GAMING PRO, B250, Socket 1151, DDR4, mATX', 5060.00, 2);
+ERROR 1366 (HY000): Incorrect string value: '\xCF\xF0\xEE\xF6\xE5\xF1...' for column 'description' at row 1
+mysql> DROP TABLE products;
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> CREATE TABLE products (
+ame VARBINARY(255) COMMENT 'Название',
+      ->   id SERIAL PRIMARY KEY,
+    ->   name VARBINARY(255) COMMENT 'Название',
+    -> d_at DATETIME  description VARBINARY(255) COMMENT 'Описание',
+    -> )
+  price DECIMAL (11,2) COMMENT 'Цена',
+    ->   catalog_id INT UNSIGNED,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   KEY index_of_catalog_id (catalog_id)
+    -> ) COMMENT = 'Товарные позиции';
+Query OK, 0 rows affected (0.34 sec)
+
+mysql> INSERT INTO products
+    -> (name, description, price, catalog_id)
+VA  (name, description, price, catalog_id)
+    -> мVALUES
+    -> el Core   ('Intel Core i3-8100', 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.', 7890.00, 1),
+    ->   ('Intel Core i5-7400', 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.', 12700.00, 1),
+    ->   ('AMD FX-8320E', 'Процессор для настольных персональных компьютеров, основанных на платформе AMD.', 4780.00, 1),
+    ->   ('AMD FX-8320', 'Процессор для настольных персональных компьютеров, основанных на платформе AMD.', 7120.00, 1),
+    ->   ('ASUS ROG MAXIMUS X HERO', 'Материнская плата ASUS ROG MAXIMUS X HERO, Z370, Socket 1151-V2, DDR4, ATX', 19310.00, 2),
+    ->   ('Gigabyte H310M S2H', 'Материнская плата Gigabyte H310M S2H, H310, Socket 1151-V2, DDR4, mATX', 4790.00, 2),
+    ->   ('MSI B250M GAMING PRO', 'Материнская плата MSI B250M GAMING PRO, B250, Socket 1151, DDR4, mATX', 5060.00, 2);
+Query OK, 7 rows affected (0.12 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+mysql> DROP TABLE IF EXISTS orders;
+TETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIMQuery OK, 0 rows affected, 1 warning (0.07 sec)
+
+mysql> CREATE TABLE orders (
+    ->   id SERIAL PRIMARY KEY,
+    -> TETIME DEFAULT   user_id INT UNSIGNED,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   KEY index_of_user_id(user_id)
+    -> ) COMMENT = 'Заказы';
+Query OK, 0 rows affected (1.35 sec)
+
+mysql> DROP TABLE IF EXISTS orders_products;
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql> CREATE TABLE orders_products (
+EY,
+  order_id I    ->   id SERIAL PRIMARY KEY,
+    -> D,
+  total   order_id INT UNSIGNED,
+ 'К    ->   product_id INT UNSIGNED,
+    ->   total INT UNSIGNED DEFAULT 1 COMMENT 'Количество заказанных товарных позиций',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Состав заказа';
+Query OK, 0 rows affected (0.68 sec)
+
+mysql> DROP TABLE IF EXISTS discounts;
+E discounts (
+  id SEQuery OK, 0 rows affected, 1 warning (0.04 sec)
+
+mysql> CREATE TABLE discounts (
+T UNSIGNED,
+  product_i    ->   id SERIAL PRIMARY KEY,
+    ->   user_id INT UNSIGNED,
+
+  started_at DAT    ->   product_id INT UNSIGNED,
+    ->   discount FLOAT UNSIGNED COMMENT 'Величина скидки от 0.0 до 1.0',
+
+  KEY index_    ->   started_at DATETIME,
+    ->   finished_at DATETIME,
+t_i    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   KEY index_of_user_id(user_id),
+    ->   KEY index_of_product_id(product_id)
+    -> ) COMMENT = 'Скидки';
+Query OK, 0 rows affected (0.86 sec)
+
+mysql> DROP TABLE IF EXISTS storehouses;
+ CURRENT_TQuery OK, 0 rows affected, 1 warning (0.01 sec)
+
+IMESTAMP,
+mysql> CREATE TABLE storehouses (
+ESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COM    -> MENT =  id SERIAL PRIMARY KEY,
+    ->   name VARCHAR(255) COMMENT 'Название',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Склады';
+Query OK, 0 rows affected (0.38 sec)
+
+mysql> DROP TABLE IF EXISTS storehouses_products;
+(
+  id SERIAL PRQuery OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> IMARY KEY,
+CREATE TABLE storehouses_products (
+    -> на складе',
+    id SERIAL PRIMARY KEY,
+    -> created_at DATETIME DEFAULT CURRENT_TIMESTA  storehouse_id INT UNSIGNED,
+    ->   product_id INT UNSIGNED,
+    ->   value INT UNSIGNED COMMENT 'Запас товарной позиции на складе',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Запасы на складе';
+Query OK, 0 rows affected (0.20 sec)
+
+mysql> SELECT * FROM users;
++----+-----------+-------------+---------------------+---------------------+
+| id | name      | birthday_at | created_at          | updated_at          |
++----+-----------+-------------+---------------------+---------------------+
+|  1 |Геннадий   | 1990-10-05  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  2 |Наталья    | 1984-11-12  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  3 |Александр  | 1985-05-20  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  4 |Сергей     | 1988-02-14  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  5 |Иван       | 1998-01-12  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  6 |Мария      | 1992-08-29  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
++----+-----------+-------------+---------------------+---------------------+
+6 rows in set (0.00 sec)
+
+mysql> INSERT INTO users VALUES (NULL, 1986-01-20, NOW(), NOW());
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+
+
+
+Задание 2:
+Таблица users была неудачно спроектирована. 
+Записи created_at и updated_at были заданы типом VARCHAR и в них долгое время 
+помещались значения в формате 20.10.2017 8:10. 
+Необходимо преобразовать поля к типу DATETIME, сохранив введённые ранее значения.
+---------------------------------------------------------------------------------
+
+mysql> SELECT
+    -> UNIX_TIMESTAMP('2020-08-30 19:06:05') AS TIMESTAMP;
++------------+
+| TIMESTAMP  |
++------------+
+| 1598799965 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT
+    -> FROM_UNIXTIME(1598799965) AS DATETIME;
++---------------------+
+| DATETIME            |
++---------------------+
+| 2020-08-30 19:06:05 |
++---------------------+
+1 row in set (0.05 sec)
+
+mysql> SELECT * FROM users;
++----+-----------+-------------+---------------------+---------------------+
+| id | name      | birthday_at | created_at          | updated_at          |
++----+-----------+-------------+---------------------+---------------------+
+|  1 |Геннадий   | 1990-10-05  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  2 |Наталья    | 1984-11-12  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  3 |Александр  | 1985-05-20  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  4 |Сергей     | 1988-02-14  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  5 |Иван       | 1998-01-12  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
+|  6 |Мария      | 1992-08-29  | 2020-08-30 19:06:05 | 2020-08-30 19:06:05 |
++----+-----------+-------------+---------------------+---------------------+
+6 rows in set (0.00 sec)
+
+
+
+Задание 3:
+В таблице складских запасов storehouses_products в поле value могут встречаться 
+самые разные цифры: 0, если товар закончился и выше нуля, если на складе имеются 
+запасы. Необходимо отсортировать записи таким образом, чтобы они выводились 
+в порядке увеличения значения value. Однако нулевые запасы должны выводиться 
+в конце, после всех записей.
+---------------------------------------------------------------------------------
+
+Заполнила данными таблицу storehouses_products, но выполнить сортировку не получилось 
+из-за ошибки 1064, посмотрела содержимое таблицы, там тоже возникла ошибка, 
+но уже 1146:
+
+mysql> INSERT INTO storehouses_products
+ '2020-01-2    -> 5', '2020-08-30'),
+  (4, '589412', 7120, 16, '2017-08  (id, storehouse_id, product_id, value, created_at, updated_at)
+    -> VALUES
+    ->   (1, '125365', 7890, 22, '2019-06-28', '2020-08-30'),
+    ->   (2, '526854', 1270, 10, '2018-12-12', '2020-08-30'),
+    ->   (3, '658941', 4780, 0, '2020-01-25', '2020-08-30'),
+    ->   (4, '589412', 7120, 16, '2017-08-10', '2020-08-30'),
+    ->   (5, '412032', 1931, 2, '2019-07-05', '2020-08-30');
+Query OK, 5 rows affected (0.16 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SELECT id, storehouse_id, product_id, value, FROM storehouses_products ORDER BY value;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FROM storehouses_products ORDER BY value' at line 1
+mysql> SELECT id, id, storehouse_id, product_id, value, FROM storehouses_products ORDER BY value;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FROM storehouses_products ORDER BY value' at line 1
+mysql> SELECT * FROM storehouse_id;
+ERROR 1146 (42S02): Table 'shop.storehouse_id' doesn't exist
+mysql> SELECT * FROM storehouse_id;
+
+
+
+Практические задания теме «Агрегация данных».
+Задание 1:
+Подсчитайте средний возраст пользователей в таблице users.
+---------------------------------------------------------------------------------
+
+mysql> SELECT
+    -> name,
+    -> (TO_DAYS(NOW()) - TO_DAYS(birthday_at)) / 365.25 AS age
+    -> FROM
+    -> users;
++-----------+---------+
+| name      | age     |
++-----------+---------+
+|Геннадий   | 29.9028 |
+|Наталья    | 35.7974 |
+|Александр  | 35.2799 |
+|Сергей     | 32.5421 |
+|Иван       | 22.6311 |
+|Мария      | 28.0027 |
++-----------+---------+
+6 rows in set (0.03 sec)
+
+mysql> SELECT
+    -> name,
+    -> FLOOR((TO_DAYS(NOW()) - TO_DAYS(birthday_at)) / 365.25) AS age
+    -> FROM
+    -> users;
++-----------+----+
+| name      | age|
++-----------+----+
+|Геннадий   | 29 |
+|Наталья    | 35 |
+|Александр  | 35 |
+|Сергей     | 32 |
+|Иван       | 22 |
+|Мария      | 28 |
++-----------+----+
+6 rows in set (0.00 sec)
+
+mysql> SELECT ((35 - 22) / 2) + 22;
++----------------------+
+| ((35 - 22) / 2) + 22 |
++----------------------+
+|              28.5000 |
++----------------------+
+1 row in set (0.03 sec)
+
+Таким образом средний возраст пользователей 28 с половиной лет.
+
+
+
+Задание 2:
+Подсчитайте количество дней рождения, которые приходятся на каждый из дней недели. 
+Следует учесть, что необходимы дни недели текущего года, а не года рождения.
+---------------------------------------------------------------------------------
+
+Данное задание не успела уже выполнить. 
+Слишком много времени ушло на разбирательства с ошибками.
+Прошу дать возможность доздать его к следующему уроку.
+Надеюсь на понимание.
