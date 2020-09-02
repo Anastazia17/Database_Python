@@ -1,0 +1,383 @@
+________________________________________________________________________________
+
+Урок 5 (доделанная домашняя работа).
+
+Практические задания по теме «Операторы, фильтрация, сортировка и ограничение».
+
+Задание 2:
+Таблица users была неудачно спроектирована. 
+Записи created_at и updated_at были заданы типом VARCHAR и в них долгое время 
+помещались значения в формате 20.10.2017 8:10. 
+Необходимо преобразовать поля к типу DATETIME, сохранив введённые ранее значения.
+---------------------------------------------------------------------------------
+
+mysql> DROP TABLE IF EXISTS users;
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> CREATE TABLE users (
+    ->    id SERIAL PRIMARY KEY,
+    ->   name VARBINARY(255) COMMENT 'Имя покупателя',
+    ->   birthday_at DATE COMMENT 'Дата рождения',
+    ->   created_at VARCHAR(255),
+    ->   updated_at VARCHAR(255)
+    -> ) COMMENT = 'Покупатели';
+Query OK, 0 rows affected (1.03 sec)
+
+mysql> INSERT INTO
+    -> at, created_a  users (name, birthday_at, created_at, updated_at)
+    -> 16:32'),
+VALUES
+    -> д  ('Геннадий', '1990-10-05', '07.01.2016 12:05', '07.01.2016 12:05'),
+    ->   ('Наталья', '1984-11-12', '20.05.2016 16:32', '20.05.2016 16:32'),
+    ->   ('Александр', '1985-05-20', '14.08.2016 20:10', '14.08.2016 20:10'),
+    ->   ('Сергей', '1988-02-14', '21.10.2016 9:14', '21.10.2016 9:14'),
+    ->   ('Иван', '1998-01-12', '15.12.2016 12:45', '15.12.2016 12:45'),
+    ->   ('Мария', '2006-08-29', '12.01.2017 8:56', '12.01.2017 8:56');
+Query OK, 6 rows affected (0.03 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> UPDATE
+    ->   users
+    -> SET
+    ->   created_at = STR_TO_DATE(created_at, '%d.%m.%Y %k:%i'),
+    ->   updated_at = STR_TO_DATE(updated_at, '%d.%m.%Y %k:%i');
+Query OK, 6 rows affected (0.05 sec)
+Rows matched: 6  Changed: 6  Warnings: 0
+
+mysql> ALTER TABLE
+    ->   users
+    -> CHANGE
+    ->   updated_at updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+Query OK, 6 rows affected (1.36 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> DESCRIBE users;
++-------------+---------------------+------+-----+-------------------+-----------------------------+
+| Field       | Type                | Null | Key | Default           | Extra                       |
++-------------+---------------------+------+-----+-------------------+-----------------------------+
+| id          | bigint(20) unsigned | NO   | PRI | NULL              | auto_increment              |
+| name        | varbinary(255)      | YES  |     | NULL              |                             |
+| birthday_at | date                | YES  |     | NULL              |                             |
+| created_at  | varchar(255)        | YES  |     | NULL              |                             |
+| updated_at  | datetime            | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++-------------+---------------------+------+-----+-------------------+-----------------------------+
+5 rows in set (0.01 sec)
+
+
+Задание 3:
+В таблице складских запасов storehouses_products в поле value могут встречаться 
+самые разные цифры: 0, если товар закончился и выше нуля, если на складе имеются 
+запасы. Необходимо отсортировать записи таким образом, чтобы они выводились 
+в порядке увеличения значения value. Однако нулевые запасы должны выводиться 
+в конце, после всех записей.
+---------------------------------------------------------------------------------
+
+mysql> DROP TABLE IF EXISTS storehouses_products;
+Query OK, 0 rows affected (0.20 sec)
+
+mysql> CREATE TABLE storehouses_products (
+    ->   id SERIAL PRIMARY KEY,
+    ->   storehouse_id INT UNSIGNED,
+    -> ладе  product_id INT UNSIGNED,
+    ->   value INT UNSIGNED COMMENT 'Запас товарной позиции на складе',
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) COMMENT = 'Запасы на складе';
+Query OK, 0 rows affected (0.76 sec)
+
+mysql> INSERT INTO
+    -> products (storeh  storehouses_products (storehouse_id, product_id, value)
+    -> VALUES
+    ->   (1, 543, 0),
+    ->   (1, 789, 2500),
+    ->   (1, 3432, 0),
+    ->   (1, 826, 30),
+    ->   (1, 719, 500),
+    ->   (1, 638, 1);
+Query OK, 6 rows affected (0.03 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> SELECT
+    ->   *
+    -> FROM
+    ->   storehouses_products
+    -> ORDER BY
+    ->   IF(value > 0, 0, 1),
+    ->   value;
++----+---------------+------------+-------+---------------------+---------------------+
+| id | storehouse_id | product_id | value | created_at          | updated_at          |
++----+---------------+------------+-------+---------------------+---------------------+
+|  6 |             1 |        638 |     1 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  4 |             1 |        826 |    30 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  5 |             1 |        719 |   500 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  2 |             1 |        789 |  2500 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  1 |             1 |        543 |     0 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  3 |             1 |       3432 |     0 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
++----+---------------+------------+-------+---------------------+---------------------+
+6 rows in set (0.02 sec)
+
+mysql> SELECT
+    ->   *
+    -> FROM
+    ->   storehouses_products
+    -> ORDER BY
+    ->   value = 0, value;
++----+---------------+------------+-------+---------------------+---------------------+
+| id | storehouse_id | product_id | value | created_at          | updated_at          |
++----+---------------+------------+-------+---------------------+---------------------+
+|  6 |             1 |        638 |     1 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  4 |             1 |        826 |    30 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  5 |             1 |        719 |   500 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  2 |             1 |        789 |  2500 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  1 |             1 |        543 |     0 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
+|  3 |             1 |       3432 |     0 | 2020-09-01 21:17:50 | 2020-09-01 21:17:50 |
++----+---------------+------------+-------+---------------------+---------------------+
+6 rows in set (0.02 sec)
+
+
+
+Практические задания теме «Агрегация данных».
+
+Задание 1:
+Подсчитайте средний возраст пользователей в таблице users.
+---------------------------------------------------------------------------------
+
+mysql> SELECT
+    ->   AVG(TIMESTAMPDIFF(YEAR, birthday_at, NOW())) AS age
+    -> FROM
+    ->   users;
++---------+
+| age     |
++---------+
+| 27.8333 |
++---------+
+1 row in set (0.01 sec)
+
+
+Задание 2:
+Подсчитайте количество дней рождения, которые приходятся на каждый из дней недели. 
+Следует учесть, что необходимы дни недели текущего года, а не года рождения.
+---------------------------------------------------------------------------------
+
+mysql> SELECT
+    ->   DATE  DATE_FORMAT(DATE(CONCAT_WS('-', YEAR(NOW()), MONTH(birthday_at), DAY(birthday_at))), '%W') AS day,
+    ->   COUNT(*) AS total
+    -> FROM
+    ->   users
+    -> GROUP BY
+    ->   day
+    -> ORDER BY
+    ->   total DESC;
++-----------+-------+
+| day       | total |
++-----------+-------+
+| Saturday  |     1 |
+| Monday    |     1 |
+| Sunday    |     1 |
+| Friday    |     1 |
+| Wednesday |     1 |
+| Thursday  |     1 |
++-----------+-------+
+6 rows in set (0.00 sec)
+
+
+Задание 3:
+(по желанию) Подсчитайте произведение чисел в столбце таблицы.
+---------------------------------------------------------------------------------
+
+mysql> INSERT INTO catalogs VALUES
+    ->   (NULL, 'Процессоры'),
+    ->  'Матер  (NULL, 'Материнские платы'),
+    ->  (NULL, 'Ви  (NULL, 'Видеокарты'),
+    ->   (  (NULL, 'Жесткие диски'),
+    ->   (NULL, 'Оперативная память');
+Query OK, 5 rows affected (0.11 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SELECT ROUND(EXP(SUM(LN(id)))) FROM catalogs;
++-------------------------+
+| ROUND(EXP(SUM(LN(id)))) |
++-------------------------+
+|                 3628800 |
++-------------------------+
+1 row in set (0.00 sec)
+
+
+_________________________________________________________________________________
+
+Урок 6.
+
+Задание 1:
+Создать и заполнить таблицы лайков и постов.
+---------------------------------------------------------------------------------
+
+mysql> USE vk
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> DROP TABLE IF EXISTS likes;
+CREATE TAQuery OK, 0 rows affected, 1 warning (0.00 sec)BLE
+
+mysql> CREATE TABLE likes (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   user_id INT UNSIGNED NOT NULL,
+    ->   target_id INT UNSIGNED NOT NULL,
+    ->   target_type_id INT UNSIGNED NOT NULL,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.31 sec)
+
+mysql> DROP TABLE IF EXISTS target_types;
+BLE target_types (
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> CREATE TABLE target_types (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   name VARCHAR(255) NOT NULL UNIQUE,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.36 sec)
+
+mysql> INSERT INTO target_types (name) VALUES
+    -> ),
+  ('user  ('messages'),
+    ->   ('users'),
+    ->   ('media'),
+    ->   ('posts');
+Query OK, 4 rows affected (0.11 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO likes
+    ->   SELECT
+    ->     id,
+    ->     FLOOR(1 + (RAND() * 100)),
+    ->     FLOOR(1 + (RAND() * 100)),
+    ->     FLOOR(1 + (RAND() * 4)),
+    ->     CURRENT_TIMESTAMP
+    ->   FROM messages;
+Query OK, 100 rows affected (0.21 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM likes LIMIT 10;
++----+---------+-----------+----------------+---------------------+
+| id | user_id | target_id | target_type_id | created_at          |
++----+---------+-----------+----------------+---------------------+
+|  1 |      27 |        26 |              3 | 2020-09-02 01:02:24 |
+|  2 |      74 |        19 |              3 | 2020-09-02 01:02:24 |
+|  3 |      95 |        62 |              2 | 2020-09-02 01:02:24 |
+|  4 |      49 |        63 |              3 | 2020-09-02 01:02:24 |
+|  5 |      52 |        53 |              1 | 2020-09-02 01:02:24 |
+|  6 |      79 |        74 |              2 | 2020-09-02 01:02:24 |
+|  7 |      28 |        48 |              3 | 2020-09-02 01:02:24 |
+|  8 |      48 |        62 |              3 | 2020-09-02 01:02:24 |
+|  9 |      49 |        44 |              3 | 2020-09-02 01:02:24 |
+| 10 |      17 |        76 |              2 | 2020-09-02 01:02:24 |
++----+---------+-----------+----------------+---------------------+
+10 rows in set (0.00 sec)
+
+mysql> CREATE TABLE posts (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   user_id INT UNSIGNED NOT NULL,
+    ->   community_id INT UNSIGNED,
+    ->   head VARCHAR(255),
+    ->   body TEXT NOT NULL,
+    ->   media_id INT UNSIGNED,
+    ->   is_public BOOLEAN DEFAULT TRUE,
+    ->   is_archived BOOLEAN DEFAULT FALSE,
+    ->   views_counter INT UNSIGNED DEFAULT 0,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.34 sec)
+
+
+Задание 2:
+Создать все необходимые внешние ключи и диаграмму отношений.
+---------------------------------------------------------------------------------
+
+mysql> DESC profiles;
++------------+------------------+------+-----+-------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default           | Extra                       |
++------------+------------------+------+-----+-------------------+-----------------------------+
+| user_id    | int(10) unsigned | NO   | PRI | NULL              |                             |
+| gender     | char(1)          | NO   |     | NULL              |                             |
+| birthday   | date             | YES  |     | NULL              |                             |
+| photo_id   | int(10) unsigned | YES  |     | NULL              |                             |
+| city       | varchar(130)     | YES  |     | NULL              |                             |
+| country    | varchar(130)     | YES  |     | NULL              |                             |
+| created_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| region_id  | int(10) unsigned | YES  |     | NULL              |                             |
++------------+------------------+------+-----+-------------------+-----------------------------+
+9 rows in set (0.14 sec)
+
+mysql> ALTER TABLE profiles
+_user_id_fk
+     ->   ADD CONSTRAINT profiles_user_id_fk
+   FOREIGN KEY (user_id) REFERENCES     ->     FOREIGN KEY (user_id) REFERENCES users(id)
+    ->       ON DELETE CASCADE,
+    -> d_fk
+    FOR  ADD CONSTRAINT profiles_photo_id_fk
+    ->     FOREIGN KEY (photo_id) REFERENCES media(id)
+    ->       ON DELETE SET NULL;
+Query OK, 100 rows affected (1.91 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE profiles DROP FOREIGN KEY profiles_user_id_fk;
+TABLE profiles MODIFY COLUMN photo_id INT(10) UNSIGNED;Query OK, 0 rows affected (0.74 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE profiles MODIFY COLUMN photo_id INT(10) UNSIGNED;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESC messages;
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| Field        | Type             | Null | Key | Default           | Extra                       |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| id           | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| from_user_id | int(10) unsigned | NO   |     | NULL              |                             |
+| to_user_id   | int(10) unsigned | NO   |     | NULL              |                             |
+| body         | text             | NO   |     | NULL              |                             |
+| is_important | tinyint(1)       | YES  |     | NULL              |                             |
+| is_delivered | tinyint(1)       | YES  |     | NULL              |                             |
+| created_at   | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at   | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+8 rows in set (0.03 sec)
+
+mysql> ALTER TABLE messages
+D    ->   ADD CONSTRAINT messages_from_user_id_fk
+    ->     FOREIGN KEY (from_user_id) REFERENCES users(id),
+TRAINT messages_to_    ->   ADD CONSTRAINT messages_to_user_id_fk
+    ->     FOREIGN KEY (to_user_id) REFERENCES users(id);
+Query OK, 100 rows affected (3.04 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+Диаграмма отношений в Workbench: https://prnt.sc/uaedsb
+Построить мне ее удалось, но она у меня почему-то не отображается - просто серый фон и все.
+
+
+Задание 3:
+Определить кто больше поставил лайков (всего) - мужчины или женщины?
+---------------------------------------------------------------------------------
+Прошу дать возможность выполнить к следующему уроку.
+
+
+Задание 4:
+Подсчитать общее количество лайков десяти самым молодым пользователям
+(сколько лайков получили 10 самых молодых пользователей).
+---------------------------------------------------------------------------------
+Прошу дать возможность выполнить к следующему уроку.
+
+
+Задание 5:
+Найти 10 пользователей, которые проявляют наименьшую активность в использовании 
+социальной сети (критерии активности необходимо определить самостоятельно).
+---------------------------------------------------------------------------------
+Здесь могу сказать сразу, что задание выполнить не смогу. 
+Не представляю по каким именно критериям оценивать активность пользователей - 
+вариантов может быть много (по переходам на другие страницы, клики, лайки, посты, 
+добавление фотографий, отправка сообщений).
+Но даже зная данные критерии, я не знаю, как это осуществить.
