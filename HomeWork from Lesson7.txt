@@ -1,0 +1,616 @@
+
+
+Задание 1:
+Составьте список пользователей users, которые осуществили 
+хотя бы один заказ orders в интернет магазине.
+---------------------------------------------------------------------------------
+
+Подготовка:
+_________________________________________________________________________________
+
+mysql> DROP TABLE IF EXISTS `orders_products`;
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CREATE TABLE `orders_products` (
+T NULL,    ->
+  `or  `id` int(10) unsigned NOT NULL,
+    ->   `order_id` int(10) unsigned DEFAULT NULL,
+    -> ) unsigned DEFA  `product_id` int(10) unsigned DEFAULT NULL,
+MP,
+  `updated_at` datet    -> ime DEFA  `total` int(10) unsigned DEFAULT '1' COMMENT 'Количество заказов',
+E=InnoDB DEFAULT CHARS    ->   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    ->   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Состав заказов';
+Query OK, 0 rows affected (0.27 sec)
+
+mysql> LOCK TABLES `orders_products` WRITE;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DROP TABLE IF EXISTS `orders`;
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE `orders` (
+    ->   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    ->   `user_id` int(10) unsigned DEFAULT NULL,
+    ->   `catalog_id` int(10) unsigned DEFAULT NULL,
+    ->   `created_at`  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    ->   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -> 8_bin COMMENT='Зак  PRIMARY KEY (`id`),
+    ->   UNIQUE KEY `id` (`id`),
+    ->   KEY `index_of_user_id` (`user_id`)
+    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Заказы';
+Query OK, 0 rows affected (0.58 sec)
+
+mysql> LOCK TABLES `orders` WRITE;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DROP TABLE IF EXISTS `products`;
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CREATE TABLE `products` (
+    ->   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    -> L COMMENT 'Н  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT 'Название',
+    -> sign  `description` text COLLATE utf8_bin COMMENT 'Описание',
+    -> TAMP ON UPD  `price` decimal(11,2) DEFAULT NULL COMMENT 'Цена',
+    -> id`),  `catalog_id` int(10) unsigned DEFAULT NULL,
+    ->  AUTO_INCREMENT=  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    ->   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   PRIMARY KEY (`id`),
+    ->   UNIQUE KEY `id` (`id`),
+    ->   KEY `index_of_catalog_id` (`catalog_id`)
+    -> ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Товарные позиции';
+Query OK, 0 rows affected (0.32 sec)
+
+mysql> LOCK TABLES `products` WRITE;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO `products` VALUES (1,'Intel Core i3-8100','Процессор для настольных ПК',7890.00,1,'2019-03-26 00:21:19','2019-03-25 19:44:43'),(3,'AMD FX-8320E','Процессор для настольных ПК',4780.00,1,'2019-03-26 00:21:19','2019-03-25 19:44:43'),(4,'AMD FX-8320','Процессор для настольных ПК',7120.00,1,'2019-03-25 19:44:43','2019-03-25 19:44:43'),(6,'Gigabyte H310M S2H, H310, Socket 1151-V2','Материнская плата Gigabyte H310M S2H, H310, Socket 1151-V2',4790.00,2,'2019-03-25 19:44:43','2019-03-25 19:44:43'),(7,'MSI B250M GAMING PRO','Материнская плата MSI B250M GAMING PRO',4554.00,2,'2019-03-25 19:44:43','2019-03-25 20:04:47'),(8,'One More prod','Good prod',10000.00,2,'2019-01-01 00:00:00','2019-01-01 00:00:00');
+Query OK, 6 rows affected (0.04 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> /*!40000 ALTER TABLE `products` ENABLE KEYS */;
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DROP TABLE IF EXISTS `storehouses`;
+Query OK, 0 rows affected (0.16 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE `storehouses` (
+    -> DEFAULT   `id` int(10) unsigned DEFAULT NULL,
+    ->   `name` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT 'Название',
+    ->   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    ->   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> B DEFA) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Склады';
+Query OK, 0 rows affected (0.39 sec)
+
+mysql> LOCK TABLES `storehouses` WRITE;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DROP TABLE IF EXISTS `storehouses_products`;
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE `storehouses_products` (
+    -> NULL  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    ->   `storehouse_id` int(10) unsigned DEFAULT NULL,
+    ->   `product_id` int(10) unsigned DEFAULT NULL,
+    -> FAULT NULL COMM  `value` int(10) unsigned DEFAULT NULL COMMENT 'Запас товарный позиции на складке',
+    -> P ON UPD  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    -> =InnoDB  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   PRIMARY KEY (`id`),
+    -> MENT='Запасы на складе';  UNIQUE KEY `id` (`id`)
+    -> ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Запасы на складе';
+Query OK, 0 rows affected (0.76 sec)
+
+mysql> LOCK TABLES `storehouses_products` WRITE;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO `storehouses_products` VALUES (1,1,1,15,'2019-03-26 21:36:33','2019-03-26 21:36:33'),(2,1,3,0,'2019-03-26 21:36:33','2019-03-26 21:36:33'),(3,1,5,10,'2019-03-26 21:36:33','2019-03-26 21:36:33'),(4,1,7,5,'2019-03-26 21:36:33','2019-03-26 21:36:33'),(5,1,8,0,'2019-03-26 21:36:33','2019-03-26 21:36:33');
+Query OK, 5 rows affected (0.02 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DROP TABLE IF EXISTS `tab1`;
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CREATE TABLE `tab1` (
+    ->   `id` int(10) unsigned NOT NULL,
+    ->   `name` varchar(128) COLLATE  `name` varchar(128) COLLATE utf8_bin NOT NULL DEFAULT 'NoName',
+    ->   `collect` json DEFAULT NULL
+    -> ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+Query OK, 0 rows affected (0.36 sec)
+
+mysql> LOCK TABLES `tab1` WRITE;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> INSERT INTO `tab1` VALUES (136,'Intel i7',NULL),(136,'NoName',NULL),(1,'Intel i7','{\"first\": \"Hello\", \"second\": \"World\"}');
+Query OK, 3 rows affected (0.04 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DROP TABLE IF EXISTS `users`;
+Query OK, 0 rows affected (0.11 sec)
+
+mysql> SET character_set_client = utf8mb4 ;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE `users` (
+    ->   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    ->   `name` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT 'Имя покупателя',
+    -> ` date D  `birthday_at` date DEFAULT NULL COMMENT 'Дата рождения',
+    -> LT CU  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    ->   `updated_at` dat  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    ->   PRIMARY KEY (`id`),
+    ->   UNIQUE KEY `id` (`id`)
+    -> ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Покупатели';
+Query OK, 0 rows affected (0.41 sec)
+
+mysql> LOCK TABLES `users` WRITE;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO `users` VALUES (1,'Геннадий','1990-10-05','2019-03-25 20:21:11','2019-03-25 20:21:11'),(2,'Наталья','1984-11-12','2019-03-25 20:21:11','2019-03-25 20:21:11'),(3,'Александр','1985-05-20','2019-03-25 20:21:11','2019-03-25 20:21:11'),(4,'Сергей','1988-02-14','2019-03-25 20:21:11','2019-03-25 20:21:11'),(5,'Иван','1998-01-12','2019-03-25 20:21:11','2019-03-25 20:21:11'),(6,'Мария','2006-08-29','2019-03-25 20:21:11','2019-03-25 20:21:11');
+Query OK, 6 rows affected (0.03 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> UNLOCK TABLES;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> ALTER TABLE
+    -> orders
+    -> CHANGE COLUMN
+    -> user_id user_id BIGINT(20) UNSIGNED NOT NULL;
+Query OK, 0 rows affected (0.08 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE orders
+    -> ADD CONSTRAINT fk_user_id
+    -> FOREIGN KEY (user_id)
+    -> REFERENCES users(id)
+    -> ON DELETE RESTRICT
+    -> ON UPDATE RESTRICT;
+Query OK, 0 rows affected (0.78 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE
+    -> orders
+    -> CHANGE COLUMN
+    -> catalog_id catalog_id BIGINT(20) UNSIGNED NOT NULL;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE orders
+    -> ADD CONSTRAINT fk_catalog_id
+    -> FOREIGN KEY (catalog_id)
+    -> REFERENCES catalogs(id)
+    -> ON DELETE RESTRICT
+    -> ON UPDATE RESTRICT;
+Query OK, 0 rows affected (1.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> UPDATE orders
+    -> SET created_at = NOW()
+    -> WHERE created_at is NULL;
+Query OK, 0 rows affected (0.00 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql> UPDATE orders
+    -> SET updated_at = NOW()
+    -> WHERE created_at is NULL;
+Query OK, 0 rows affected (0.00 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql>  ALTER TABLE
+    -> orders_products
+    -> CHANGE COLUMN
+    -> order_id order_id BIGINT(20) UNSIGNED NOT NULL;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE
+    -> orders_products
+    -> CHANGE COLUMN
+    -> product_id product_id BIGINT(20) UNSIGNED NOT NULL;
+Query OK, 0 rows affected (0.16 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE
+    -> orders_products
+    -> ADD CONSTRAINT fk_order_id
+    -> FOREIGN KEY(order_id)
+    -> REFERENCES orders(id)
+    -> ON DELETE RESTRICT
+    -> ON UPDATE RESTRICT;
+Query OK, 0 rows affected (0.81 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE
+    -> orders_products
+    -> ADD CONSTRAINT fk_order_product_id
+    -> FOREIGN KEY(product_id)
+    -> REFERENCES products(id)
+    -> ON DELETE RESTRICT
+    -> ON UPDATE RESTRICT;
+Query OK, 0 rows affected (1.20 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE orders_products DROP id;
+Query OK, 0 rows affected (0.49 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE orders_products
+    -> ADD PRIMARY KEY(order_id, product_id);
+Query OK, 0 rows affected (1.69 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO orders (user_id, catalog_id) VALUES (1, 2);
+Query OK, 1 row affected (0.02 sec)
+
+mysql> INSERT INTO orders (user_id, catalog_id)
+    -> VALUES
+    -> (2, 4),
+    -> (6, 7);
+Query OK, 2 rows affected (0.03 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO orders (user_id, catalog_id)
+    -> VALUES
+    -> (1, 5);
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT * FROM orders;
++----+---------+------------+---------------------+---------------------+
+| id | user_id | catalog_id | created_at          | updated_at          |
++----+---------+------------+---------------------+---------------------+
+|  2 |       1 |          2 | 2020-09-05 21:02:22 | 2020-09-05 21:02:22 |
+|  3 |       2 |          4 | 2020-09-05 21:41:54 | 2020-09-05 21:41:54 |
+|  4 |       6 |          7 | 2020-09-05 21:41:54 | 2020-09-05 21:41:54 |
+|  5 |       1 |          5 | 2020-09-05 21:52:11 | 2020-09-05 21:52:11 |
++----+---------+------------+---------------------+---------------------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO orders (id, user_id, catalog_id)
+    -> VALUES
+    -> (1, 1, 5);
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT * FROM orders;
++----+---------+------------+---------------------+---------------------+
+| id | user_id | catalog_id | created_at          | updated_at          |
++----+---------+------------+---------------------+---------------------+
+|  1 |       1 |          5 | 2020-09-05 21:55:04 | 2020-09-05 21:55:04 |
+|  2 |       1 |          2 | 2020-09-05 21:02:22 | 2020-09-05 21:02:22 |
+|  3 |       2 |          4 | 2020-09-05 21:41:54 | 2020-09-05 21:41:54 |
+|  4 |       6 |          7 | 2020-09-05 21:41:54 | 2020-09-05 21:41:54 |
+|  5 |       1 |          5 | 2020-09-05 21:52:11 | 2020-09-05 21:52:11 |
++----+---------+------------+---------------------+---------------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM products;
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+
+| id | name                                     | description                                                                | price    | catalog_id | created_at          | updated_at          |
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+
+|  1 | Intel Core i3-8100                       | Процессор для настольных ПК                                                |  7890.00 |          1 | 2019-03-26 00:21:19 | 2019-03-25 19:44:43 |
+|  3 | AMD FX-8320E                             | Процессор для настольных ПК                                                |  4780.00 |          1 | 2019-03-26 00:21:19 | 2019-03-25 19:44:43 |
+|  4 | AMD FX-8320                              | Процессор для настольных ПК                                                |  7120.00 |          1 | 2019-03-25 19:44:43 | 2019-03-25 19:44:43 |
+|  6 | Gigabyte H310M S2H, H310, Socket 1151-V2 | Материнская плата Gigabyte H310M S2H, H310, Socket 1151-V2                 |  4790.00 |          2 | 2019-03-25 19:44:43 | 2019-03-25 19:44:43 |
+|  7 | MSI B250M GAMING PRO                     | Материнская плата MSI B250M GAMING PRO                                     |  4554.00 |          2 | 2019-03-25 19:44:43 | 2019-03-25 20:04:47 |
+|  8 | One More prod                            | Good prod                                                                  | 10000.00 |          2 | 2019-01-01 00:00:00 | 2019-01-01 00:00:00 |
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+
+6 rows in set (0.01 sec)
+
+INSERT INTO `products` VALUES (2,'Intel Core i5-8600','Процессор для настольных ПК',9990.00,1,'2019-05-25 00:20:00','2019-05-28 20:24:20');
+Query OK, 1 rows affected (0.00 sec)
+Records: 1  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO `products` VALUES (5, 'MSI B300M PRO','Материнская плата MSI B300M PRO',3554.00,2,'2019-07-25 20:44:43','2019-03-25 20:03:07');
+Query OK, 1 row affected (0.02 sec)
+
+mysql> SELECT * FROM products;
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+
+| id | name                                     | description                                                                | price    | catalog_id | created_at          | updated_at          |ver version for the right syntax to use near 'B300M PRO','Мат
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+25 20:44:43','2019-03-25 20:03:07');
+|  1 | Intel Core i3-8100                       | Процессор для настольных ПК                                                |  7890.00 |          1 | 2019-03-26 00:21:19 | 2019-03-25 19:44:43 |have an error in your SQL syntax; check the manual that corre
+|  2 | Intel Core i5-8600                       | Процессор для настольных ПК                                                |  9990.00 |          1 | 2019-05-25 00:20:00 | 2019-05-28 20:24:20 |ucts` VALUES (5, 'MSI B300M PRO','Материнская плата MSI B300M
+|  3 | AMD FX-8320E                             | Процессор для настольных ПК                                                |  4780.00 |          1 | 2019-03-26 00:21:19 | 2019-03-25 19:44:43 |
+|  4 | AMD FX-8320                              | Процессор для настольных ПК                                                |  7120.00 |          1 | 2019-03-25 19:44:43 | 2019-03-25 19:44:43 |
+|  5 | MSI B300M PRO                            | Материнская плата MSI B300M PRO                                            |  3554.00 |          2 | 2019-07-25 20:44:43 | 2019-03-25 20:03:07 |
+|  6 | Gigabyte H310M S2H, H310, Socket 1151-V2 | Материнская плата Gigabyte H310M S2H, H310, Socket 1151-V2                 |  4790.00 |          2 | 2019-03-25 19:44:43 | 2019-03-25 19:44:43 |
+|  7 | MSI B250M GAMING PRO                     | Материнская плата MSI B250M GAMING PRO                                     |  4554.00 |          2 | 2019-03-25 19:44:43 | 2019-03-25 20:04:47 |
+|  8 | One More prod                            | Good prod                                                                  | 10000.00 |          2 | 2019-01-01 00:00:00 | 2019-01-01 00:00:00 |
++----+------------------------------------------+----------------------------------------------------------------------------+----------+------------+---------------------+---------------------+
+8 rows in set (0.01 sec)
+
+mysql> INSERT INTO 
+    -> orders_products(order_id, product_id)
+    -> VALUES
+    -> (1, 5),
+    -> (2, 2),
+    -> (3, 4),
+    -> (4, 7),
+    -> (5, 5);
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM orders_products;
++----------+------------+-------+---------------------+---------------------+
+| order_id | product_id | total | created_at          | updated_at          |
++----------+------------+-------+---------------------+---------------------+
+|        1 |          5 |     1 | 2020-09-05 22:12:41 | 2020-09-05 22:12:41 |
+|        2 |          2 |     1 | 2020-09-05 22:12:41 | 2020-09-05 22:12:41 |
+|        3 |          4 |     1 | 2020-09-05 22:12:41 | 2020-09-05 22:12:41 |
+|        4 |          7 |     1 | 2020-09-05 22:12:41 | 2020-09-05 22:12:41 |
+|        5 |          5 |     1 | 2020-09-05 22:12:41 | 2020-09-05 22:12:41 |
++----------+------------+-------+---------------------+---------------------+
+5 rows in set (0.00 sec)
+
+
+Короткое решение:
+_____________________________________________________________________________
+
+Код из блокнота:
+----------------
+
+SELECT 
+	u.id AS user_id, u.name,
+	o.id AS order_id
+FROM 
+	users AS u
+RIGHT JOIN
+	orders AS o 
+ON
+	u.id = o.user_id;
+
+
+Результат в командной строке:
+-----------------------------
+
+mysql> SELECT
+    -> u.id AS user_id, u.name,
+    -> o.id AS order_id
+    -> FROM
+    -> users AS u
+    -> RIGHT JOIN
+    -> orders AS o
+    -> ON
+    -> u.id = o.user_id;
++---------+------------------+----------+
+| user_id | name             | order_id |
++---------+------------------+----------+
+|       1 | Геннадий         |        1 |
+|       1 | Геннадий         |        2 |
+|       1 | Геннадий         |        5 |
+|       2 | Наталья          |        3 |
+|       6 | Мария            |        4 |
++---------+------------------+----------+
+5 rows in set (0.01 sec)
+
+
+Развернутое решение:
+_____________________________________________________________________________
+
+Код из блокнота:
+----------------
+
+SELECT 
+	u.id AS user_id, u.name AS user_name,
+	op.order_id AS order_id,
+	op.product_id AS product_id,
+	(SELECT name FROM products WHERE id = op.product_id) AS product_name,
+	op.total
+FROM 
+	users AS u
+RIGHT JOIN
+	orders AS o 
+ON
+	u.id = o.user_id
+RIGHT JOIN
+	orders_products AS op
+ON
+	o.id = op.order_id
+ORDER BY u.name, op.order_id;
+
+
+Результат в командной строке:
+-----------------------------
+
+mysql> SELECT
+S user_id, u.    -> u.id AS user_id, u.name AS user_name,
+    -> op.order_id AS order_id,
+    -> op.product_id AS product_id,
+    -> (SELECT name FROM products WHERE id = op.product_id) AS product_name,
+    -> OM
+        uop.total
+    -> rs AS o
+ON
+        u.id = oFROM
+    -> users AS u
+    -> RIGHT JOIN
+    -> orders AS o
+    -> ON
+    -> u.id = o.user_id
+    -> RIGHT JOIN
+    -> orders_products AS op
+    -> ON
+    -> o.id = op.order_id
+    -> ORDER BY u.name, op.order_id;
++---------+------------------+----------+------------+----------------------+-------+
+| user_id | user_name        | order_id | product_id | product_name         | total |
++---------+------------------+----------+------------+----------------------+-------+
+|       1 | Геннадий         |        1 |          5 | MSI B300M PRO        |     1 |
+|       1 | Геннадий         |        2 |          2 | Intel Core i5-8600   |     1 |
+|       1 | Геннадий         |        5 |          5 | MSI B300M PRO        |     1 |
+|       6 | Мария            |        4 |          7 | MSI B250M GAMING PRO |     1 |
+|       2 | Наталья          |        3 |          4 | AMD FX-8320          |     1 |
++---------+------------------+----------+------------+----------------------+-------+
+5 rows in set (0.00 sec)
+
+
+
+Задание 2:
+Выведите список товаров products и разделов catalogs, который соответствует товару.
+---------------------------------------------------------------------------------
+
+Код из блокнота:
+----------------
+
+SELECT 
+	p.id, p.name, p.price,
+	c.id AS cat_id,
+	c.name AS catalog
+FROM
+	products AS p
+JOIN
+	catalogs AS c
+ON 
+	p.catalog_id = c.id; 
+
+
+Результат в командной строке:
+-----------------------------
+
+mysql> SELECT
+    -> p.id, p.name, p.price,
+    -> c.id AS cat_id,
+    -> c.name AS catalog
+    -> FROM
+    -> products AS p
+    -> JOIN
+    -> catalogs AS c
+p.id, p.name, p.price,
+    -> c.id AS cat_id,
+    -> c.name AS catalog
+    -> FROM
+    -> products AS p
+    -> JOIN
+    -> catalogs AS c
+    -> ON
+    -> p.catalog_id = c.id;
++----+------------------------------------------+----------+--------+-------------------+
+| id | name                                     | price    | cat_id | catalog           |
++----+------------------------------------------+----------+--------+-------------------+
+|  1 | Intel Core i3-8100                       |  7890.00 |      1 |                   |
+|  2 | Intel Core i5-8600                       |  9990.00 |      1 |                   |
+|  3 | AMD FX-8320E                             |  4780.00 |      1 |                   |
+|  4 | AMD FX-8320                              |  7120.00 |      1 |                   |
+|  5 | MSI B300M PRO                            |  3554.00 |      2 |                   |
+|  6 | Gigabyte H310M S2H, H310, Socket 1151-V2 |  4790.00 |      2 |                   |
+|  7 | MSI B250M GAMING PRO                     |  4554.00 |      2 |                   |
+|  8 | One More prod                            | 10000.00 |      2 |                   |
++----+------------------------------------------+----------+--------+-------------------+
+8 rows in set (0.00 sec)
+
+
+
+Задание 3:
+(по желанию) Пусть имеется таблица рейсов flights (id, from, to) и таблица городов 
+cities (label, name). Поля from, to и label содержат английские названия городов, 
+поле name — русское. Выведите список рейсов flights с русскими названиями городов.
+---------------------------------------------------------------------------------
+
+Подготовка:
+_________________________________________________________________________________
+
+mysql> CREATE DATABASE airport;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE airport
+Database changed
+mysql> CREATE TABLE IF NOT EXISTS flights(
+    ->  id SERIAL PRIMARY KEY,
+    ->  `from` VARCHAR(50) CHARACTER SET utf8 NOT NULL COMMENT 'en',
+    ->  `to` VARCHAR(50) CHARACTER SET utf8 NOT NULL COMMENT 'en'
+    ->  );
+Query OK, 0 rows affected (0.48 sec)
+
+mysql> CREATE TABLE  IF NOT EXISTS cities(
+    ->  label VARCHAR(50) CHARACTER SET utf8 PRIMARY KEY COMMENT 'en',
+    ->  name VARCHAR(50) CHARACTER SET utf8 COMMENT 'ru'
+    ->  );
+Query OK, 0 rows affected (0.28 sec)
+
+mysql> ALTER TABLE flights
+    ->  ADD CONSTRAINT fk_from_label
+    ->  FOREIGN KEY(`from`)
+    ->  REFERENCES cities(label);
+Query OK, 0 rows affected (1.69 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE flights
+    ->  ADD CO ADD CONSTRAINT fk_to_label
+    ->  FOREIGN KEY(`to`)
+    ->  REFERENCES cities(label);
+Query OK, 0 rows affected (0.55 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO cities VALUES
+    -> ('Moscow', 'Москва'),
+    -> ('Saint Petersburg', 'Санкт-Петербург'),
+    -> ('Omsk', 'Омск'),
+    -> ('Tomsk', 'Томск'),
+    -> ('Ufa', 'Уфа');
+Query OK, 5 rows affected (0.08 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>  INSERT INTO flights VALUES
+    -> (NULL, 'Moscow', 'Saint Petersburg'),
+    -> (NULL, 'Saint Petersburg', 'Omsk'),
+    -> (NULL, 'Omsk', 'Tomsk'),
+    -> (NULL, 'Tomsk', 'Ufa'),
+    -> (NULL, 'Ufa', 'Moscow');
+Query OK, 5 rows affected (0.10 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+
+Решение:
+_________________________________________________________________________________
+
+mysql> SELECT
+    -> id AS flight_id,
+    -> (SELECT name FROM cities WHERE label = `from`) AS `from`,
+    -> (SELECT name FROM cities WHERE label = `to`) AS `to`
+    -> FROM
+    -> flights
+    -> ORDER BY
+    -> flight_id;
++-----------+-------------------------------+-------------------------------+
+| flight_id | from                          | to                            |
++-----------+-------------------------------+-------------------------------+
+|         1 | Москва                        | Санкт-Петербург               |
+|         2 | Санкт-Петербург               | Омск                          |
+|         3 | Омск                          | Томск                         |
+|         4 | Томск                         | Уфа                           |
+|         5 | Уфа                           | Москва                        |
++-----------+-------------------------------+-------------------------------+
+5 rows in set (0.01 sec)
