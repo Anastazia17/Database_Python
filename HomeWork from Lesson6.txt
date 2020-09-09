@@ -1,0 +1,807 @@
+
+________________________________________________________________________________
+
+Урок 6 (доделанная домашняя работа).
+
+
+Задание 1:
+Создать и заполнить таблицы лайков и постов.
+---------------------------------------------------------------------------------
+
+mysql> USE vk
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> DROP TABLE IF EXISTS likes;
+CREATE TAQuery OK, 0 rows affected, 1 warning (0.00 sec)BLE
+
+mysql> CREATE TABLE likes (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   user_id INT UNSIGNED NOT NULL,
+    ->   target_id INT UNSIGNED NOT NULL,
+    ->   target_type_id INT UNSIGNED NOT NULL,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.31 sec)
+
+mysql> DROP TABLE IF EXISTS target_types;
+BLE target_types (
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+
+mysql> CREATE TABLE target_types (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   name VARCHAR(255) NOT NULL UNIQUE,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.36 sec)
+
+mysql> INSERT INTO target_types (name) VALUES
+    -> ),
+  ('user  ('messages'),
+    ->   ('users'),
+    ->   ('media'),
+    ->   ('posts');
+Query OK, 4 rows affected (0.11 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO likes
+    ->   SELECT
+    ->     id,
+    ->     FLOOR(1 + (RAND() * 100)),
+    ->     FLOOR(1 + (RAND() * 100)),
+    ->     FLOOR(1 + (RAND() * 4)),
+    ->     CURRENT_TIMESTAMP
+    ->   FROM messages;
+Query OK, 100 rows affected (0.21 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM likes LIMIT 10;
++----+---------+-----------+----------------+---------------------+
+| id | user_id | target_id | target_type_id | created_at          |
++----+---------+-----------+----------------+---------------------+
+|  1 |      27 |        26 |              3 | 2020-09-02 01:02:24 |
+|  2 |      74 |        19 |              3 | 2020-09-02 01:02:24 |
+|  3 |      95 |        62 |              2 | 2020-09-02 01:02:24 |
+|  4 |      49 |        63 |              3 | 2020-09-02 01:02:24 |
+|  5 |      52 |        53 |              1 | 2020-09-02 01:02:24 |
+|  6 |      79 |        74 |              2 | 2020-09-02 01:02:24 |
+|  7 |      28 |        48 |              3 | 2020-09-02 01:02:24 |
+|  8 |      48 |        62 |              3 | 2020-09-02 01:02:24 |
+|  9 |      49 |        44 |              3 | 2020-09-02 01:02:24 |
+| 10 |      17 |        76 |              2 | 2020-09-02 01:02:24 |
++----+---------+-----------+----------------+---------------------+
+10 rows in set (0.00 sec)
+
+mysql> CREATE TABLE posts (
+    ->   id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    ->   user_id INT UNSIGNED NOT NULL,
+    ->   community_id INT UNSIGNED,
+    ->   head VARCHAR(255),
+    ->   body TEXT NOT NULL,
+    ->   media_id INT UNSIGNED,
+    ->   is_public BOOLEAN DEFAULT TRUE,
+    ->   is_archived BOOLEAN DEFAULT FALSE,
+    ->   views_counter INT UNSIGNED DEFAULT 0,
+    ->   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ->   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    -> );
+Query OK, 0 rows affected (0.34 sec)
+
+
+
+Задание 2:
+Создать все необходимые внешние ключи и диаграмму отношений.
+---------------------------------------------------------------------------------
+
+mysql> DESC profiles;
++------------+------------------+------+-----+-------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default           | Extra                       |
++------------+------------------+------+-----+-------------------+-----------------------------+
+| user_id    | int(10) unsigned | NO   | PRI | NULL              |                             |
+| gender     | char(1)          | NO   |     | NULL              |                             |
+| birthday   | date             | YES  |     | NULL              |                             |
+| photo_id   | int(10) unsigned | YES  |     | NULL              |                             |
+| city       | varchar(130)     | YES  |     | NULL              |                             |
+| country    | varchar(130)     | YES  |     | NULL              |                             |
+| created_at | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
+| region_id  | int(10) unsigned | YES  |     | NULL              |                             |
++------------+------------------+------+-----+-------------------+-----------------------------+
+9 rows in set (0.14 sec)
+
+mysql> ALTER TABLE profiles
+_user_id_fk
+     ->   ADD CONSTRAINT profiles_user_id_fk
+   FOREIGN KEY (user_id) REFERENCES     ->     FOREIGN KEY (user_id) REFERENCES users(id)
+    ->       ON DELETE CASCADE,
+    -> d_fk
+    FOR  ADD CONSTRAINT profiles_photo_id_fk
+    ->     FOREIGN KEY (photo_id) REFERENCES media(id)
+    ->       ON DELETE SET NULL;
+Query OK, 100 rows affected (1.91 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE profiles DROP FOREIGN KEY profiles_user_id_fk;
+TABLE profiles MODIFY COLUMN photo_id INT(10) UNSIGNED;Query OK, 0 rows affected (0.74 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE profiles MODIFY COLUMN photo_id INT(10) UNSIGNED;
+Query OK, 0 rows affected (0.07 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESC messages;
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| Field        | Type             | Null | Key | Default           | Extra                       |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+| id           | int(10) unsigned | NO   | PRI | NULL              | auto_increment              |
+| from_user_id | int(10) unsigned | NO   |     | NULL              |                             |
+| to_user_id   | int(10) unsigned | NO   |     | NULL              |                             |
+| body         | text             | NO   |     | NULL              |                             |
+| is_important | tinyint(1)       | YES  |     | NULL              |                             |
+| is_delivered | tinyint(1)       | YES  |     | NULL              |                             |
+| created_at   | datetime         | YES  |     | CURRENT_TIMESTAMP |                             |
+| updated_at   | datetime         | YES  |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
++--------------+------------------+------+-----+-------------------+-----------------------------+
+8 rows in set (0.03 sec)
+
+mysql> ALTER TABLE messages
+D    ->   ADD CONSTRAINT messages_from_user_id_fk
+    ->     FOREIGN KEY (from_user_id) REFERENCES users(id),
+TRAINT messages_to_    ->   ADD CONSTRAINT messages_to_user_id_fk
+    ->     FOREIGN KEY (to_user_id) REFERENCES users(id);
+Query OK, 100 rows affected (3.04 sec)
+Records: 100  Duplicates: 0  Warnings: 0
+
+Диаграмма отношений в Workbench: https://prnt.sc/uaedsb
+
+Построить мне ее удалось, но она у меня почему-то не отображается - просто серый фон и все.
+
+В ДБивере не получается подключиться, чтобы ее построить. Выдается ошибка. 
+Делала все по инструкции в 1 уроке. В моей версии Бмвера 2.7.1 для виддовса х32 нельзя выставить время Европы. 
+Нет такой настройки в новом подключении.
+
+Пробовала даже уже создать диаграмму в командной строке. Тщетно.
+Пакет установила:
+
+anastazia@anastazia-VirtualBox:~$ sudo apt install sqlfairy
+Чтение списков пакетов… Готово
+Построение дерева зависимостей
+Чтение информации о состоянии… Готово
+Заметьте, вместо «sqlfairy» выбирается «libsql-translator-perl»
+Будут установлены следующие дополнительные пакеты:
+  graphviz libappconfig-perl libb-hooks-op-check-perl libbareword-filehandles-perl libbit-vector-perl
+  libcarp-clan-perl libcdt5 libcgraph6 libclass-inspector-perl libclass-makemethods-perl
+  libclass-method-modifiers-perl libclass-xsaccessor-perl libcrypt-rc4-perl libdate-calc-perl libdate-calc-xs-perl
+  libdate-manip-perl libdbi-perl libdevel-globaldestruction-perl libdigest-perl-md5-perl libfile-sharedir-perl
+  libgd-perl libgraph-perl libgraphviz-perl libgvc6 libgvpr2 libimport-into-perl libindirect-perl libio-stringy-perl
+  libjcode-pm-perl liblexical-sealrequirehints-perl libmodule-runtime-perl libmoo-perl libmultidimensional-perl
+  libole-storage-lite-perl libpackage-variant-perl libparams-classify-perl libparse-recdescent-perl libpathplan4
+  libreadonly-perl librole-tiny-perl libspreadsheet-parseexcel-perl libspreadsheet-writeexcel-perl libstrictures-perl
+  libsub-exporter-progressive-perl libtemplate-perl libtext-autoformat-perl libtext-recordparser-perl
+  libtext-reform-perl libtext-tabulardisplay-perl libtry-tiny-perl libunicode-map-perl libxml-libxml-perl
+  libxml-namespacesupport-perl libxml-sax-base-perl libxml-sax-expat-perl libxml-sax-perl libxml-xpath-perl
+Предлагаемые пакеты:
+  graphviz-doc libmldbm-perl libnet-daemon-perl libsql-statement-perl libscalar-number-perl libtemplate-perl-doc
+  libtemplate-plugin-gd-perl libtemplate-plugin-xml-perl
+НОВЫЕ пакеты, которые будут установлены:
+  graphviz libappconfig-perl libb-hooks-op-check-perl libbareword-filehandles-perl libbit-vector-perl
+  libcarp-clan-perl libcdt5 libcgraph6 libclass-inspector-perl libclass-makemethods-perl
+  libclass-method-modifiers-perl libclass-xsaccessor-perl libcrypt-rc4-perl libdate-calc-perl libdate-calc-xs-perl
+  libdate-manip-perl libdbi-perl libdevel-globaldestruction-perl libdigest-perl-md5-perl libfile-sharedir-perl
+  libgd-perl libgraph-perl libgraphviz-perl libgvc6 libgvpr2 libimport-into-perl libindirect-perl libio-stringy-perl
+  libjcode-pm-perl liblexical-sealrequirehints-perl libmodule-runtime-perl libmoo-perl libmultidimensional-perl
+  libole-storage-lite-perl libpackage-variant-perl libparams-classify-perl libparse-recdescent-perl libpathplan4
+  libreadonly-perl librole-tiny-perl libspreadsheet-parseexcel-perl libspreadsheet-writeexcel-perl
+  libsql-translator-perl libstrictures-perl libsub-exporter-progressive-perl libtemplate-perl libtext-autoformat-perl
+  libtext-recordparser-perl libtext-reform-perl libtext-tabulardisplay-perl libtry-tiny-perl libunicode-map-perl
+  libxml-libxml-perl libxml-namespacesupport-perl libxml-sax-base-perl libxml-sax-expat-perl libxml-sax-perl
+  libxml-xpath-perl
+обновлено 0, установлено 58 новых пакетов, для удаления отмечено 0 пакетов, и 393 пакетов не обновлено.
+Необходимо скачать 7 640 kБ архивов.
+После данной операции, объём занятого дискового пространства возрастёт на 42,6 MB.
+Хотите продолжить? [Д/н] y
+Пол:1 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libcdt5 i386 2.38.0-12ubuntu2.1 [23,6 kB]
+Пол:2 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libcgraph6 i386 2.38.0-12ubuntu2.1 [47,2 kB]
+Пол:3 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libpathplan4 i386 2.38.0-12ubuntu2.1 [26,7 kB]
+Пол:4 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libgvc6 i386 2.38.0-12ubuntu2.1 [615 kB]
+Пол:5 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libgvpr2 i386 2.38.0-12ubuntu2.1 [182 kB]
+Пол:6 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 graphviz i386 2.38.0-12ubuntu2.1 [687 kB]
+Пол:7 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libappconfig-perl all 1.66-1 [75,5 kB]
+Пол:8 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libb-hooks-op-check-perl i386 0.19-2build2 [9 456 B]
+Пол:9 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 liblexical-sealrequirehints-perl i386 0.009-1build1 [13,2 kB]
+Пол:10 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libbareword-filehandles-perl i386 0.003-1build3 [7 898 B]
+Пол:11 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libcarp-clan-perl all 6.04-2 [11,6 kB]
+Пол:12 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libbit-vector-perl i386 7.4-1build1 [142 kB]
+Пол:13 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libclass-inspector-perl all 1.28-1 [18,7 kB]
+Пол:14 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libclass-makemethods-perl all 1.01-4 [362 kB]
+Пол:15 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libclass-method-modifiers-perl all 2.11-1 [15,7 kB]
+Пол:16 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libclass-xsaccessor-perl i386 1.19-2build4 [33,2 kB]
+Пол:17 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libcrypt-rc4-perl all 2.02-2 [7 712 B]
+Пол:18 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libdate-calc-perl all 6.4-1 [187 kB]
+Пол:19 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libdate-calc-xs-perl i386 6.4-1build1 [49,2 kB]
+Пол:20 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libdate-manip-perl all 6.52-1 [921 kB]
+Пол:21 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libdbi-perl i386 1.634-1build1 [747 kB]
+Пол:22 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libsub-exporter-progressive-perl all 0.001011-1 [7 064 B]
+Пол:23 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libdevel-globaldestruction-perl all 0.13-1 [7 664 B]
+Пол:24 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libdigest-perl-md5-perl all 1.9-1 [11,0 kB]
+Пол:25 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libfile-sharedir-perl all 1.102-1 [11,6 kB]
+Пол:26 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libgraph-perl all 1:0.96-2 [117 kB]
+Пол:27 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libparse-recdescent-perl all 1.967013+dfsg-1 [145 kB]
+Пол:28 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libxml-xpath-perl all 1.30-1 [75,0 kB]
+Пол:29 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libgraphviz-perl all 2.20-1 [110 kB]
+Пол:30 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libparams-classify-perl i386 0.013-5build1 [21,6 kB]
+Пол:31 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libmodule-runtime-perl all 0.014-2 [15,6 kB]
+Пол:32 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libimport-into-perl all 1.002005-1 [11,0 kB]
+Пол:33 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libindirect-perl i386 0.36-1build1 [22,8 kB]
+Пол:34 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libio-stringy-perl all 2.110-5 [93,5 kB]
+Пол:35 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libjcode-pm-perl i386 2.06-1 [31,0 kB]
+Пол:36 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 librole-tiny-perl all 2.000001-2 [16,9 kB]
+Пол:37 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libstrictures-perl all 2.000002-1 [17,4 kB]
+Пол:38 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libmoo-perl all 2.000002-1 [57,1 kB]
+Пол:39 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libmultidimensional-perl i386 0.010-1build3 [6 938 B]
+Пол:40 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libole-storage-lite-perl all 0.19-1 [26,1 kB]
+Пол:41 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libpackage-variant-perl all 1.003002-1 [17,4 kB]
+Пол:42 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libreadonly-perl all 2.000-2 [18,6 kB]
+Пол:43 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libspreadsheet-writeexcel-perl all 2.40-1 [628 kB]
+Пол:44 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libunicode-map-perl i386 0.112-11build2 [144 kB]
+Пол:45 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libspreadsheet-parseexcel-perl all 0.6500-1 [155 kB]
+Пол:46 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libtry-tiny-perl all 0.24-1 [19,8 kB]
+Пол:47 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libsql-translator-perl all 0.11021-1 [429 kB]
+Пол:48 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libtemplate-perl i386 2.24-1.2build2 [510 kB]
+Пол:49 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libtext-reform-perl all 1.20-2 [35,8 kB]
+Пол:50 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libtext-autoformat-perl all 1.740000-1 [30,5 kB]
+Пол:51 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libtext-recordparser-perl all 1.6.5-1 [41,3 kB]
+Пол:52 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libtext-tabulardisplay-perl all 1.38-1 [14,1 kB]
+Пол:53 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libxml-namespacesupport-perl all 1.11-1 [13,2 kB]
+Пол:54 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libxml-sax-base-perl all 1.07-1 [21,5 kB]
+Пол:55 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libxml-sax-perl all 0.99+dfsg-2ubuntu1 [64,6 kB]
+Пол:56 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libxml-libxml-perl i386 2.0123+dfsg-1ubuntu0.1 [332 kB]
+Пол:57 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libxml-sax-expat-perl all 0.40-2 [11,5 kB]
+Пол:58 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libgd-perl i386 2.53-2.1 [165 kB]
+Получено 7 640 kБ за 5с (1 309 kБ/c)
+Извлечение шаблонов из пакетов: 100%
+Выбор ранее не выбранного пакета libcdt5.
+(Чтение базы данных … на данный момент установлено 185804 файла и каталога.)
+Подготовка к распаковке …/libcdt5_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается libcdt5 (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета libcgraph6.
+Подготовка к распаковке …/libcgraph6_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается libcgraph6 (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета libpathplan4.
+Подготовка к распаковке …/libpathplan4_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается libpathplan4 (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета libgvc6.
+Подготовка к распаковке …/libgvc6_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается libgvc6 (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета libgvpr2.
+Подготовка к распаковке …/libgvpr2_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается libgvpr2 (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета graphviz.
+Подготовка к распаковке …/graphviz_2.38.0-12ubuntu2.1_i386.deb …
+Распаковывается graphviz (2.38.0-12ubuntu2.1) …
+Выбор ранее не выбранного пакета libappconfig-perl.
+Подготовка к распаковке …/libappconfig-perl_1.66-1_all.deb …
+Распаковывается libappconfig-perl (1.66-1) …
+Выбор ранее не выбранного пакета libb-hooks-op-check-perl.
+Подготовка к распаковке …/libb-hooks-op-check-perl_0.19-2build2_i386.deb …
+Распаковывается libb-hooks-op-check-perl (0.19-2build2) …
+Выбор ранее не выбранного пакета liblexical-sealrequirehints-perl.
+Подготовка к распаковке …/liblexical-sealrequirehints-perl_0.009-1build1_i386.deb …
+Распаковывается liblexical-sealrequirehints-perl (0.009-1build1) …
+Выбор ранее не выбранного пакета libbareword-filehandles-perl.
+Подготовка к распаковке …/libbareword-filehandles-perl_0.003-1build3_i386.deb …
+Распаковывается libbareword-filehandles-perl (0.003-1build3) …
+Выбор ранее не выбранного пакета libcarp-clan-perl.
+Подготовка к распаковке …/libcarp-clan-perl_6.04-2_all.deb …
+Распаковывается libcarp-clan-perl (6.04-2) …
+Выбор ранее не выбранного пакета libbit-vector-perl.
+Подготовка к распаковке …/libbit-vector-perl_7.4-1build1_i386.deb …
+Распаковывается libbit-vector-perl (7.4-1build1) …
+Выбор ранее не выбранного пакета libclass-inspector-perl.
+Подготовка к распаковке …/libclass-inspector-perl_1.28-1_all.deb …
+Распаковывается libclass-inspector-perl (1.28-1) …
+Выбор ранее не выбранного пакета libclass-makemethods-perl.
+Подготовка к распаковке …/libclass-makemethods-perl_1.01-4_all.deb …
+Распаковывается libclass-makemethods-perl (1.01-4) …
+Выбор ранее не выбранного пакета libclass-method-modifiers-perl.
+Подготовка к распаковке …/libclass-method-modifiers-perl_2.11-1_all.deb …
+Распаковывается libclass-method-modifiers-perl (2.11-1) …
+Выбор ранее не выбранного пакета libclass-xsaccessor-perl.
+Подготовка к распаковке …/libclass-xsaccessor-perl_1.19-2build4_i386.deb …
+Распаковывается libclass-xsaccessor-perl (1.19-2build4) …
+Выбор ранее не выбранного пакета libcrypt-rc4-perl.
+Подготовка к распаковке …/libcrypt-rc4-perl_2.02-2_all.deb …
+Распаковывается libcrypt-rc4-perl (2.02-2) …
+Выбор ранее не выбранного пакета libdate-calc-perl.
+Подготовка к распаковке …/libdate-calc-perl_6.4-1_all.deb …
+Распаковывается libdate-calc-perl (6.4-1) …
+Выбор ранее не выбранного пакета libdate-calc-xs-perl.
+Подготовка к распаковке …/libdate-calc-xs-perl_6.4-1build1_i386.deb …
+Распаковывается libdate-calc-xs-perl (6.4-1build1) …
+Выбор ранее не выбранного пакета libdate-manip-perl.
+Подготовка к распаковке …/libdate-manip-perl_6.52-1_all.deb …
+Распаковывается libdate-manip-perl (6.52-1) …
+Выбор ранее не выбранного пакета libdbi-perl.
+Подготовка к распаковке …/libdbi-perl_1.634-1build1_i386.deb …
+Распаковывается libdbi-perl (1.634-1build1) …
+Выбор ранее не выбранного пакета libsub-exporter-progressive-perl.
+Подготовка к распаковке …/libsub-exporter-progressive-perl_0.001011-1_all.deb …
+Распаковывается libsub-exporter-progressive-perl (0.001011-1) …
+Выбор ранее не выбранного пакета libdevel-globaldestruction-perl.
+Подготовка к распаковке …/libdevel-globaldestruction-perl_0.13-1_all.deb …
+Распаковывается libdevel-globaldestruction-perl (0.13-1) …
+Выбор ранее не выбранного пакета libdigest-perl-md5-perl.
+Подготовка к распаковке …/libdigest-perl-md5-perl_1.9-1_all.deb …
+Распаковывается libdigest-perl-md5-perl (1.9-1) …
+Выбор ранее не выбранного пакета libfile-sharedir-perl.
+Подготовка к распаковке …/libfile-sharedir-perl_1.102-1_all.deb …
+Распаковывается libfile-sharedir-perl (1.102-1) …
+Выбор ранее не выбранного пакета libgraph-perl.
+Подготовка к распаковке …/libgraph-perl_1%3a0.96-2_all.deb …
+Распаковывается libgraph-perl (1:0.96-2) …
+Выбор ранее не выбранного пакета libparse-recdescent-perl.
+Подготовка к распаковке …/libparse-recdescent-perl_1.967013+dfsg-1_all.deb …
+Распаковывается libparse-recdescent-perl (1.967013+dfsg-1) …
+Выбор ранее не выбранного пакета libxml-xpath-perl.
+Подготовка к распаковке …/libxml-xpath-perl_1.30-1_all.deb …
+Распаковывается libxml-xpath-perl (1.30-1) …
+Выбор ранее не выбранного пакета libgraphviz-perl.
+Подготовка к распаковке …/libgraphviz-perl_2.20-1_all.deb …
+Распаковывается libgraphviz-perl (2.20-1) …
+Выбор ранее не выбранного пакета libparams-classify-perl.
+Подготовка к распаковке …/libparams-classify-perl_0.013-5build1_i386.deb …
+Распаковывается libparams-classify-perl (0.013-5build1) …
+Выбор ранее не выбранного пакета libmodule-runtime-perl.
+Подготовка к распаковке …/libmodule-runtime-perl_0.014-2_all.deb …
+Распаковывается libmodule-runtime-perl (0.014-2) …
+Выбор ранее не выбранного пакета libimport-into-perl.
+Подготовка к распаковке …/libimport-into-perl_1.002005-1_all.deb …
+Распаковывается libimport-into-perl (1.002005-1) …
+Выбор ранее не выбранного пакета libindirect-perl.
+Подготовка к распаковке …/libindirect-perl_0.36-1build1_i386.deb …
+Распаковывается libindirect-perl (0.36-1build1) …
+Выбор ранее не выбранного пакета libio-stringy-perl.
+Подготовка к распаковке …/libio-stringy-perl_2.110-5_all.deb …
+Распаковывается libio-stringy-perl (2.110-5) …
+Выбор ранее не выбранного пакета libjcode-pm-perl.
+Подготовка к распаковке …/libjcode-pm-perl_2.06-1_i386.deb …
+Распаковывается libjcode-pm-perl (2.06-1) …
+Выбор ранее не выбранного пакета librole-tiny-perl.
+Подготовка к распаковке …/librole-tiny-perl_2.000001-2_all.deb …
+Распаковывается librole-tiny-perl (2.000001-2) …
+Выбор ранее не выбранного пакета libstrictures-perl.
+Подготовка к распаковке …/libstrictures-perl_2.000002-1_all.deb …
+Распаковывается libstrictures-perl (2.000002-1) …
+Выбор ранее не выбранного пакета libmoo-perl.
+Подготовка к распаковке …/libmoo-perl_2.000002-1_all.deb …
+Распаковывается libmoo-perl (2.000002-1) …
+Выбор ранее не выбранного пакета libmultidimensional-perl.
+Подготовка к распаковке …/libmultidimensional-perl_0.010-1build3_i386.deb …
+Распаковывается libmultidimensional-perl (0.010-1build3) …
+Выбор ранее не выбранного пакета libole-storage-lite-perl.
+Подготовка к распаковке …/libole-storage-lite-perl_0.19-1_all.deb …
+Распаковывается libole-storage-lite-perl (0.19-1) …
+Выбор ранее не выбранного пакета libpackage-variant-perl.
+Подготовка к распаковке …/libpackage-variant-perl_1.003002-1_all.deb …
+Распаковывается libpackage-variant-perl (1.003002-1) …
+Выбор ранее не выбранного пакета libreadonly-perl.
+Подготовка к распаковке …/libreadonly-perl_2.000-2_all.deb …
+Распаковывается libreadonly-perl (2.000-2) …
+Выбор ранее не выбранного пакета libspreadsheet-writeexcel-perl.
+Подготовка к распаковке …/libspreadsheet-writeexcel-perl_2.40-1_all.deb …
+Распаковывается libspreadsheet-writeexcel-perl (2.40-1) …
+Выбор ранее не выбранного пакета libunicode-map-perl.
+Подготовка к распаковке …/libunicode-map-perl_0.112-11build2_i386.deb …
+Распаковывается libunicode-map-perl (0.112-11build2) …
+Выбор ранее не выбранного пакета libspreadsheet-parseexcel-perl.
+Подготовка к распаковке …/libspreadsheet-parseexcel-perl_0.6500-1_all.deb …
+Распаковывается libspreadsheet-parseexcel-perl (0.6500-1) …
+Выбор ранее не выбранного пакета libtry-tiny-perl.
+Подготовка к распаковке …/libtry-tiny-perl_0.24-1_all.deb …
+Распаковывается libtry-tiny-perl (0.24-1) …
+Выбор ранее не выбранного пакета libsql-translator-perl.
+Подготовка к распаковке …/libsql-translator-perl_0.11021-1_all.deb …
+Распаковывается libsql-translator-perl (0.11021-1) …
+Выбор ранее не выбранного пакета libtemplate-perl.
+Подготовка к распаковке …/libtemplate-perl_2.24-1.2build2_i386.deb …
+Распаковывается libtemplate-perl (2.24-1.2build2) …
+Выбор ранее не выбранного пакета libtext-reform-perl.
+Подготовка к распаковке …/libtext-reform-perl_1.20-2_all.deb …
+Распаковывается libtext-reform-perl (1.20-2) …
+Выбор ранее не выбранного пакета libtext-autoformat-perl.
+Подготовка к распаковке …/libtext-autoformat-perl_1.740000-1_all.deb …
+Распаковывается libtext-autoformat-perl (1.740000-1) …
+Выбор ранее не выбранного пакета libtext-recordparser-perl.
+Подготовка к распаковке …/libtext-recordparser-perl_1.6.5-1_all.deb …
+Распаковывается libtext-recordparser-perl (1.6.5-1) …
+Выбор ранее не выбранного пакета libtext-tabulardisplay-perl.
+Подготовка к распаковке …/libtext-tabulardisplay-perl_1.38-1_all.deb …
+Распаковывается libtext-tabulardisplay-perl (1.38-1) …
+Выбор ранее не выбранного пакета libxml-namespacesupport-perl.
+Подготовка к распаковке …/libxml-namespacesupport-perl_1.11-1_all.deb …
+Распаковывается libxml-namespacesupport-perl (1.11-1) …
+Выбор ранее не выбранного пакета libxml-sax-base-perl.
+Подготовка к распаковке …/libxml-sax-base-perl_1.07-1_all.deb …
+Распаковывается libxml-sax-base-perl (1.07-1) …
+Выбор ранее не выбранного пакета libxml-sax-perl.
+Подготовка к распаковке …/libxml-sax-perl_0.99+dfsg-2ubuntu1_all.deb …
+Распаковывается libxml-sax-perl (0.99+dfsg-2ubuntu1) …
+Выбор ранее не выбранного пакета libxml-libxml-perl.
+Подготовка к распаковке …/libxml-libxml-perl_2.0123+dfsg-1ubuntu0.1_i386.deb …
+Распаковывается libxml-libxml-perl (2.0123+dfsg-1ubuntu0.1) …
+Выбор ранее не выбранного пакета libxml-sax-expat-perl.
+Подготовка к распаковке …/libxml-sax-expat-perl_0.40-2_all.deb …
+Распаковывается libxml-sax-expat-perl (0.40-2) …
+Выбор ранее не выбранного пакета libgd-perl.
+Подготовка к распаковке …/libgd-perl_2.53-2.1_i386.deb …
+Распаковывается libgd-perl (2.53-2.1) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11) …
+Обрабатываются триггеры для man-db (2.7.5-1) …
+Обрабатываются триггеры для doc-base (0.10.7) …
+Обработка 2 добавленных файла doc-base...
+Настраивается пакет libcdt5 (2.38.0-12ubuntu2.1) …
+Настраивается пакет libcgraph6 (2.38.0-12ubuntu2.1) …
+Настраивается пакет libpathplan4 (2.38.0-12ubuntu2.1) …
+Настраивается пакет libgvc6 (2.38.0-12ubuntu2.1) …
+Настраивается пакет libgvpr2 (2.38.0-12ubuntu2.1) …
+Настраивается пакет graphviz (2.38.0-12ubuntu2.1) …
+Настраивается пакет libappconfig-perl (1.66-1) …
+Настраивается пакет libb-hooks-op-check-perl (0.19-2build2) …
+Настраивается пакет liblexical-sealrequirehints-perl (0.009-1build1) …
+Настраивается пакет libbareword-filehandles-perl (0.003-1build3) …
+Настраивается пакет libcarp-clan-perl (6.04-2) …
+Настраивается пакет libbit-vector-perl (7.4-1build1) …
+Настраивается пакет libclass-inspector-perl (1.28-1) …
+Настраивается пакет libclass-makemethods-perl (1.01-4) …
+Настраивается пакет libclass-method-modifiers-perl (2.11-1) …
+Настраивается пакет libclass-xsaccessor-perl (1.19-2build4) …
+Настраивается пакет libcrypt-rc4-perl (2.02-2) …
+Настраивается пакет libdate-calc-perl (6.4-1) …
+Настраивается пакет libdate-calc-xs-perl (6.4-1build1) …
+Настраивается пакет libdate-manip-perl (6.52-1) …
+Настраивается пакет libdbi-perl (1.634-1build1) …
+Настраивается пакет libsub-exporter-progressive-perl (0.001011-1) …
+Настраивается пакет libdevel-globaldestruction-perl (0.13-1) …
+Настраивается пакет libdigest-perl-md5-perl (1.9-1) …
+Настраивается пакет libfile-sharedir-perl (1.102-1) …
+Настраивается пакет libgraph-perl (1:0.96-2) …
+Настраивается пакет libparse-recdescent-perl (1.967013+dfsg-1) …
+Настраивается пакет libxml-xpath-perl (1.30-1) …
+Настраивается пакет libgraphviz-perl (2.20-1) …
+Настраивается пакет libparams-classify-perl (0.013-5build1) …
+Настраивается пакет libmodule-runtime-perl (0.014-2) …
+Настраивается пакет libimport-into-perl (1.002005-1) …
+Настраивается пакет libindirect-perl (0.36-1build1) …
+Настраивается пакет libio-stringy-perl (2.110-5) …
+Настраивается пакет libjcode-pm-perl (2.06-1) …
+Настраивается пакет librole-tiny-perl (2.000001-2) …
+Настраивается пакет libstrictures-perl (2.000002-1) …
+Настраивается пакет libmoo-perl (2.000002-1) …
+Настраивается пакет libmultidimensional-perl (0.010-1build3) …
+Настраивается пакет libole-storage-lite-perl (0.19-1) …
+Настраивается пакет libpackage-variant-perl (1.003002-1) …
+Настраивается пакет libreadonly-perl (2.000-2) …
+Настраивается пакет libspreadsheet-writeexcel-perl (2.40-1) …
+Настраивается пакет libunicode-map-perl (0.112-11build2) …
+Настраивается пакет libspreadsheet-parseexcel-perl (0.6500-1) …
+Настраивается пакет libtry-tiny-perl (0.24-1) …
+Настраивается пакет libsql-translator-perl (0.11021-1) …
+Настраивается пакет libtemplate-perl (2.24-1.2build2) …
+Настраивается пакет libtext-reform-perl (1.20-2) …
+Настраивается пакет libtext-autoformat-perl (1.740000-1) …
+Настраивается пакет libtext-recordparser-perl (1.6.5-1) …
+Настраивается пакет libtext-tabulardisplay-perl (1.38-1) …
+Настраивается пакет libxml-namespacesupport-perl (1.11-1) …
+Настраивается пакет libxml-sax-base-perl (1.07-1) …
+Настраивается пакет libxml-sax-perl (0.99+dfsg-2ubuntu1) …
+update-perl-sax-parsers: Registering Perl SAX parser XML::SAX::PurePerl with priority 10...
+update-perl-sax-parsers: Updating overall Perl SAX parser modules info file...
+
+Creating config file /etc/perl/XML/SAX/ParserDetails.ini with new version
+Настраивается пакет libxml-libxml-perl (2.0123+dfsg-1ubuntu0.1) …
+update-perl-sax-parsers: Registering Perl SAX parser XML::LibXML::SAX::Parser with priority 50...
+update-perl-sax-parsers: Registering Perl SAX parser XML::LibXML::SAX with priority 50...
+update-perl-sax-parsers: Updating overall Perl SAX parser modules info file...
+Replacing config file /etc/perl/XML/SAX/ParserDetails.ini with new version
+Настраивается пакет libxml-sax-expat-perl (0.40-2) …
+update-perl-sax-parsers: Registering Perl SAX parser XML::SAX::Expat with priority 50...
+update-perl-sax-parsers: Updating overall Perl SAX parser modules info file...
+Replacing config file /etc/perl/XML/SAX/ParserDetails.ini with new version
+Настраивается пакет libgd-perl (2.53-2.1) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11) …
+
+А диаграмму он не создает. Ошибку выдает. И находясь в mysql пробовала, и без него.
+
+anastazia@anastazia-VirtualBox:~$ sqlt-diagram -d=MySQL -o=sample_schema.png sample.sql --color
+
+      ERROR (line 33): Invalid statement: Was expecting comment, or use, or
+                       set, or drop, or create, or alter, or insert, or
+                       delimiter, or empty statement
+Error: translate: Error with parser 'SQL::Translator::Parser::MySQL':  no results at /usr/bin/sqlt-diagram line 142.
+
+mysql> sqlt-diagram -d=MySQL -o=sample_schema.png sample.sql --color
+    -> ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sqlt-diagram -d=MySQL -o=sample_schema.png sample.sql --color' at line 1
+
+
+
+Задание 3:
+Определить кто больше поставил лайков (всего) - мужчины или женщины?
+---------------------------------------------------------------------------------
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT
+    -> (SELECT gender FROM profiles WHERE user_id = likes.user_id) AS gender
+    -> FROM likes;
++--------+
+| gender |
++--------+
+| f      |
+| f      |
+| f      |
+| m      |
+| f      |
+| f      |
+| m      |
+| f      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| f      |
+| m      |
+| f      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| m      |
+| m      |
+| m      |
+| f      |
+| f      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| m      |
+| m      |
+| m      |
+| f      |
+| f      |
+| f      |
+| m      |
+| m      |
+| m      |
+| f      |
+| f      |
+| m      |
+| f      |
+| f      |
+| m      |
+| m      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| m      |
+| f      |
+| m      |
+| f      |
+| f      |
+| m      |
+| f      |
+| m      |
+| f      |
+| f      |
+| m      |
+| f      |
+| m      |
+| f      |
+| f      |
+| f      |
+| m      |
+| f      |
+| f      |
+| m      |
+| m      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
+| f      |
+| f      |
+| m      |
+| m      |
+| f      |
+| m      |
+| m      |
+| m      |
++--------+
+100 rows in set (0.04 sec)
+
+mysql> SELECT
+    -> (SELECT gender FROM profiles WHERE user_id = likes.user_id) AS gender,
+    -> COUNT(*) AS total
+    -> FROM likes
+    -> GROUP BY gender
+    -> ORDER BY total DESC
+    -> LIMIT 1;
++--------+-------+
+| gender | total |
++--------+-------+
+| m      |    60 |
++--------+-------+
+1 row in set (0.02 sec)
+
+
+
+Задание 4:
+Подсчитать общее количество лайков десяти самым молодым пользователям
+(сколько лайков получили 10 самых молодых пользователей).
+---------------------------------------------------------------------------------
+
+1 вариант решения:
+__________________
+
+mysql> SELECT * FROM target_types;
++----+----------+---------------------+
+| id | name     | created_at          |
++----+----------+---------------------+
+|  1 | messages | 2020-09-02 01:02:13 |
+|  2 | users    | 2020-09-02 01:02:13 |
+|  3 | media    | 2020-09-02 01:02:13 |
+|  4 | posts    | 2020-09-02 01:02:13 |
++----+----------+---------------------+
+4 rows in set (0.01 sec)
+
+mysql> SELECT * FROM profiles ORDER BY birthday DESC LIMIT 10;
++---------+--------+------------+----------+------------------+--------------------+---------------------+---------------------+-----------+
+| user_id | gender | birthday   | photo_id | city             | country            | created_at          | updated_at          | region_id |
++---------+--------+------------+----------+------------------+--------------------+---------------------+---------------------+-----------+
+|      86 | m      | 2020-04-23 |       11 | Lake Milanmouth  | Russian Federation | 2013-01-20 21:57:02 | 2020-08-26 22:43:13 |      NULL |
+|      66 | f      | 2018-11-22 |       36 | Krismouth        | Russian Federation | 2012-04-24 06:06:56 | 2020-08-26 22:43:13 |      NULL |
+|      71 | f      | 2016-09-10 |       94 | Port Chaddburgh  | Germany            | 2010-12-06 18:20:19 | 2020-08-26 22:43:13 |      NULL |
+|      85 | f      | 2016-04-06 |       20 | Edwardmouth      | Germany            | 2017-07-01 06:27:31 | 2020-08-26 22:43:13 |      NULL |
+|      76 | f      | 2016-01-29 |       15 | South Ardith     | Germany            | 2012-06-22 05:22:53 | 2020-08-26 22:43:13 |      NULL |
+|      67 | f      | 2015-11-07 |       45 | East Maxineland  | Belarus            | 2010-09-05 06:31:19 | 2020-08-26 22:43:13 |      NULL |
+|      45 | f      | 2015-09-21 |       59 | New Raymondburgh | Belarus            | 2017-09-27 01:59:37 | 2020-08-26 22:43:13 |      NULL |
+|      79 | f      | 2015-09-15 |       28 | Nobleberg        | Russian Federation | 2019-04-11 17:11:17 | 2020-08-26 22:43:13 |      NULL |
+|      68 | m      | 2015-04-08 |       18 | Keelychester     | Germany            | 2017-12-24 23:44:06 | 2020-08-26 22:43:13 |      NULL |
+|      74 | f      | 2014-11-18 |       92 | Kaneberg         | Germany            | 2013-11-24 09:10:48 | 2020-08-26 22:43:13 |      NULL |
++---------+--------+------------+----------+------------------+--------------------+---------------------+---------------------+-----------+
+10 rows in set (0.01 sec)
+
+mysql> SELECT
+    -> (SELECT COUNT(*) FROM likes WHERE target_id = profiles.user_id AND target_type_id = 2) AS likes_total
+    -> FROM profiles
+    -> ORDER BY birthday
+    -> DESC LIMIT 10;
++-------------+
+| likes_total |
++-------------+
+|           1 |
+|           0 |
+|           0 |
+|           2 |
+|           1 |
+|           1 |
+|           1 |
+|           0 |
+|           0 |
+|           1 |
++-------------+
+10 rows in set (0.01 sec)
+
+mysql> SELECT SUM(likes_total) FROM
+    -> (SELECT
+    -> (SELECT COUNT(*) FROM likes WHERE target_id = profiles.user_id AND target_type_id = 2) AS likes_total
+    -> FROM profiles
+    -> ORDER BY birthday
+    -> DESC LIMIT 10) AS user_likes
+    -> ;
++------------------+
+| SUM(likes_total) |
++------------------+
+|                7 |
++------------------+
+1 row in set (0.01 sec)
+
+
+2 вариант решения:
+__________________
+
+mysql> SELECT COUNT(*) FROM likes
+    -> WHERE target_type_id = 2
+    -> AND target_id IN (SELECT * FROM (
+    -> SELECT user_id FROM profiles ORDER BY birthday DESC LIMIT 10
+    -> ) AS sorted_profiles )
+    -> ;
++----------+
+| COUNT(*) |
++----------+
+|        7 |
++----------+
+1 row in set (0.00 sec)
+
+
+3 вариант решения:
+__________________
+
+mysql> SELECT birthday, user_id, (
+    -> SELECT COUNT(*) FROM likes WHERE
+    -> (target_id IN (SELECT id FROM media WHERE media.user_id=profiles.user_id) AND target_type_id=3) OR
+    -> (target_id IN (SELECT id FROM posts WHERE posts.user_id=profiles.user_id) AND target_type_id=4) OR
+    -> (target_id IN (SELECT id FROM messages WHERE
+    -> messages.from_user_id=profiles.user_id) AND target_type_id=1) OR
+    -> (target_id=profiles.user_id AND target_type_id=2)
+    -> ) AS likes  FROM profiles ORDER BY birthday DESC LIMIT 10;
++------------+---------+-------+
+| birthday   | user_id | likes |
++------------+---------+-------+
+| 2020-04-23 |      86 |     1 |
+| 2018-11-22 |      66 |     1 |
+| 2016-09-10 |      71 |     0 |
+| 2016-04-06 |      85 |     3 |
+| 2016-01-29 |      76 |     1 |
+| 2015-11-07 |      67 |     3 |
+| 2015-09-21 |      45 |     1 |
+| 2015-09-15 |      79 |     0 |
+| 2015-04-08 |      68 |     0 |
+| 2014-11-18 |      74 |     1 |
++------------+---------+-------+
+10 rows in set (0.18 sec)
+
+
+
+Задание 5:
+Найти 10 пользователей, которые проявляют наименьшую активность в использовании 
+социальной сети (критерии активности необходимо определить самостоятельно).
+---------------------------------------------------------------------------------
+
+mysql> SELECT
+    ->   CONCAT(first_name, ' ', last_name) AS user,
+    -> (SELECT COUNT(*) FROM likes WHERE likes.user_id = users.id) +
+    -> (SELECT COUNT(*) FROM media WHERE media.user_id = users.id) +
+    -> (SELECT COUNT(*) FROM messages WHERE messages.from_user_id = users.id) AS overall_activity
+    ->   FROM users
+    ->   ORDER BY overall_activity
+    ->   LIMIT 10;
++------------------+------------------+
+| user             | overall_activity |
++------------------+------------------+
+| Janis Kulas      |                0 |
+| Kirk Weimann     |                0 |
+| Madyson Corkery  |                0 |
+| Demario Koss     |                0 |
+| Creola Baumbach  |                0 |
+| Woodrow McKenzie |                0 |
+| Stan Fay         |                0 |
+| Pearlie O'Hara   |                0 |
+| Branson Bogan    |                0 |
+| Jules Schmitt    |                1 |
++------------------+------------------+
+10 rows in set (0.05 sec)
