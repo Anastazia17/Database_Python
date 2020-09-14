@@ -1,0 +1,193 @@
+Очень прошу дать возможность досдать 2 задание из 8 урока, сделала только 2 из 3.
+Также прошу досдать д/з к уроку 9, т.к. ушло много времени на выполнение д/з к 8 уроку.
+
+______________________________________________________________________________________
+
+Урок 8 (переписать запросы урока 6 на JOIN).
+
+Задание 1:
+Определить кто больше поставил лайков (всего) - мужчины или женщины?
+---------------------------------------------------------------------------------
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> SELECT profiles.gender,
+    -> COUNT(likes.id) AS total_likes
+    -> FROM likes
+    -> JOIN profiles
+    -> ON likes.user_id = profiles.user_id
+    -> GROUP BY profiles.gender
+    -> ORDER BY total_likes DESC
+    -> LIMIT 1;
++--------+-------------+
+| gender | total_likes |
++--------+-------------+
+| m      |          60 |
++--------+-------------+
+1 row in set (0.01 sec)
+
+
+
+Задание 2:
+Подсчитать общее количество лайков десяти самым молодым пользователям
+(сколько лайков получили 10 самых молодых пользователей).
+---------------------------------------------------------------------------------
+
+В 6 уроке решение задачи было такое, переписать на JOIN не получилось,
+JOIN для меня очень тяжел в понимании логики:
+______________________________________________________________________
+
+mysql> SELECT COUNT(*) FROM likes
+    -> WHERE target_type_id = 2
+    -> AND target_id IN (SELECT * FROM (
+    -> SELECT user_id FROM profiles ORDER BY birthday DESC LIMIT 10
+    -> ) AS sorted_profiles )
+    -> ;
++----------+
+| COUNT(*) |
++----------+
+|        7 |
++----------+
+1 row in set (0.00 sec)
+
+
+
+Задание 3:
+Найти 10 пользователей, которые проявляют наименьшую активность в использовании 
+социальной сети (критерии активности необходимо определить самостоятельно).
+---------------------------------------------------------------------------------
+
+Ваше решение, только в перевернутом виде, т.к. Вы определяли наибольшую активность,
+а у нас в задании урока 6 нужно было определить наименьшую активность.
+_________________________________________________________________________________
+
+
+SELECT users.id, first_name, last_name, COUNT(target_types.id) AS overal_likes
+  FROM users
+    LEFT JOIN media
+      ON users.id = media.user_id
+    LEFT JOIN likes
+      ON media.id = likes.target_id
+    LEFT JOIN target_types
+      ON likes.target_type_id = target_types.id
+        AND target_types.name = 'media'
+  GROUP BY users.id
+  ORDER BY overal_likes
+  LIMIT 10;
+
++----+------------+------------+--------------+
+| id | first_name | last_name  | overal_likes |
++----+------------+------------+--------------+
+| 83 | Jamison    | Gulgowski  |            0 |
+| 79 | Carlie     | Schowalter |            0 |
+| 45 | Jules      | Schmitt    |            0 |
+| 91 | Karlie     | Kessler    |            0 |
+| 76 | Jeremy     | Roob       |            0 |
+| 26 | Woodrow    | McKenzie   |            0 |
+| 84 | Angeline   | Volkman    |            0 |
+| 82 | Alberta    | Cassin     |            0 |
+| 66 | Giovanna   | Jerde      |            0 |
+| 12 | Mike       | Ferry      |            0 |
++----+------------+------------+--------------+
+10 rows in set (0.02 sec)
+
+
+SELECT users.id, first_name, last_name, COUNT(friendship.created_at) AS overal_friends
+  FROM users
+    LEFT JOIN friendship
+      ON users.id = friendship.user_id
+        OR users.id = friendship.friend_id
+  GROUP BY users.id
+  ORDER BY overal_friends
+  LIMIT 10;
++----+------------+-------------+----------------+
+| id | first_name | last_name   | overal_friends |
++----+------------+-------------+----------------+
+| 42 | Kathryn    | Volkman     |              1 |
+| 63 | Effie      | Wehner      |              1 |
+| 82 | Alberta    | Cassin      |              1 |
+| 18 | Alice      | Cormier     |              1 |
+| 55 | Madyson    | Corkery     |              1 |
+| 75 | Herman     | Cassin      |              1 |
+| 11 | Jovany     | Luettgen    |              1 |
+| 95 | Jakayla    | Heidenreich |              1 |
+| 47 | Laney      | Wolf        |              1 |
+| 68 | Sedrick    | Mante       |              1 |
++----+------------+-------------+----------------+
+10 rows in set (0.01 sec)
+
+
+Мое решение (переписала свой код из задания 6 урока на JOIN).
+_____________________________________________________________
+
+SELECT users.id, likes.user_id, media.user_id,
+  CONCAT(first_name, ' ', last_name) AS user
+  FROM users
+    LEFT JOIN likes 
+      ON likes.user_id = users.id
+    LEFT JOIN media 
+      ON media.user_id = users.id
+    LEFT JOIN messages 
+      ON messages.from_user_id = users.id
+  LIMIT 10;
+
+
+Вот что в выдаче:
+_________________
+
+mysql> SELECT users.id, likes.user_id, media.user_id,
+    -> CONCAT(first_name, ' ', last_name) AS user
+    -> FROM users
+    -> LEFT JOIN likes
+    -> ON likes.user_id = users.id
+    -> LEFT JOIN media
+    -> ON media.user_id = users.id
+    -> LEFT JOIN messages
+    -> ON messages.from_user_id = users.id
+    -> LIMIT 10;
++----+---------+---------+-------------------+
+| id | user_id | user_id | user              |
++----+---------+---------+-------------------+
+| 36 |      36 |      36 | Madison Goyette   |
+| 36 |      36 |      36 | Madison Goyette   |
+| 36 |      36 |      36 | Madison Goyette   |
+|  3 |    NULL |       3 | Marcia Spinka     |
+|  7 |       7 |       7 | Dariana Heathcote |
+|  7 |       7 |       7 | Dariana Heathcote |
+| 24 |      24 |      24 | Wyman Homenick    |
+| 97 |      97 |      97 | Gino Stiedemann   |
+| 97 |      97 |      97 | Gino Stiedemann   |
+| 16 |      16 |      16 | Adah Streich      |
++----+---------+---------+-------------------+
+10 rows in set (0.01 sec)
+
+
+А в 6 уроке было так:
+_____________________
+
+mysql> SELECT
+    ->   CONCAT(first_name, ' ', last_name) AS user,
+    -> (SELECT COUNT(*) FROM likes WHERE likes.user_id = users.id) +
+    -> (SELECT COUNT(*) FROM media WHERE media.user_id = users.id) +
+    -> (SELECT COUNT(*) FROM messages WHERE messages.from_user_id = users.id) AS overall_activity
+    ->   FROM users
+    ->   ORDER BY overall_activity
+    ->   LIMIT 10;
++------------------+------------------+
+| user             | overall_activity |
++------------------+------------------+
+| Janis Kulas      |                0 |
+| Kirk Weimann     |                0 |
+| Madyson Corkery  |                0 |
+| Demario Koss     |                0 |
+| Creola Baumbach  |                0 |
+| Woodrow McKenzie |                0 |
+| Stan Fay         |                0 |
+| Pearlie O'Hara   |                0 |
+| Branson Bogan    |                0 |
+| Jules Schmitt    |                1 |
++------------------+------------------+
+10 rows in set (0.05 sec)
