@@ -1,0 +1,412 @@
+
+Доделала Д/з к 8 уроку.
+______________________________________________________________________________________
+
+Урок 8 (переписать запросы урока 6 на JOIN).
+
+Задание 2.
+
+Подсчитать общее количество лайков десяти самым молодым пользователям
+(сколько лайков получили 10 самых молодых пользователей).
+---------------------------------------------------------------------------------
+
+В 6 уроке решение задачи было такое, переписать на JOIN не получилось,
+JOIN для меня очень тяжел в понимании логики:
+______________________________________________________________________
+
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> SELECT SUM(got_likes) AS total_likes_for_youngest
+    -> FROM (
+    -> SELECT COUNT(DISTINCT likes.id) AS got_likes
+    -> FROM profiles
+    -> LEFT JOIN likes
+    -> ON likes.target_id = profiles.user_id
+    -> AND target_type_id = 2
+    -> GROUP BY profiles.user_id
+    -> ORDER BY profiles.birthday DESC
+    -> LIMIT 10
+    -> ) AS youngest;
++--------------------------+
+| total_likes_for_youngest |
++--------------------------+
+|                        7 |
++--------------------------+
+1 row in set (0.01 sec)
+
+
+
+Задание 3.
+
+Найти 10 пользователей, которые проявляют наименьшую активность в использовании 
+социальной сети (критерии активности необходимо определить самостоятельно).
+---------------------------------------------------------------------------------
+
+mysql> SELECT users.id,
+    -> COUNT(DISTINCT messages.id) +
+    -> COUNT(DISTINCT likes.id) +
+    -> COUNT(DISTINCT media.id) AS overall_activity
+    -> FROM users
+    -> LEFT JOIN messages
+    -> ON users.id = messages.from_user_id
+    -> LEFT JOIN likes
+    -> ON users.id = likes.user_id
+    -> LEFT JOIN media
+    -> ON users.id = media.user_id
+    -> GROUP BY users.id
+    -> ORDER BY overall_activity
+    -> LIMIT 10;
++----+------------------+
+| id | overall_activity |
++----+------------------+
+| 65 |                0 |
+| 73 |                0 |
+|  1 |                0 |
+| 26 |                0 |
+| 19 |                0 |
+|  4 |                0 |
+| 20 |                0 |
+| 87 |                0 |
+| 55 |                0 |
+|  2 |                1 |
++----+------------------+
+10 rows in set (0.02 sec)
+
+
+
+______________________________________________________________________________________
+
+Урок 9
+
+Практическое задание по теме “Транзакции, переменные, представления”.
+
+Задание 1.
+
+В базе данных shop и sample присутствуют одни и те же таблицы, учебной базы данных.
+Переместите запись id = 1 из таблицы shop.users в таблицу sample.users.
+Используйте транзакции.
+
+Получилось, но не до конца((
+---------------------------------------------------------------------------------------------
+
+mysql> USE shop;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> SELECT * FROM shop.users;
++----+--------------------+-------------+---------------------+---------------------+
+| id | name               | birthday_at | created_at          | updated_at          |
++----+--------------------+-------------+---------------------+---------------------+
+|  1 | Геннадий           | 1990-10-05  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  2 | Наталья            | 1984-11-12  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  3 | Александр          | 1985-05-20  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  4 | Сергей             | 1988-02-14  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  5 | Иван               | 1998-01-12  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  6 | Мария              | 2006-08-29  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
++----+--------------------+-------------+---------------------+---------------------+
+6 rows in set (0.00 sec)
+
+mysql> SELECT * FROM sample.users;
+Empty set (0.02 sec)
+
+mysql> START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> INSERT INTO sample.users SELECT * FROM shop.users WHERE id = 1;
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+mysql> DELETE FROM shop.users WHERE id = 1;
+ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`shop`.`orders`, CONSTRAINT `fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`))
+mysql> COMMIT;
+Query OK, 0 rows affected (0.11 sec)
+
+
+
+Задание 2.
+
+Создайте представление, которое выводит название name товарной позиции из таблицы
+products и соответствующее название каталога name
+из таблицы catalogs.
+----------------------------------------------------------------------------------------------
+
+mysql> CREATE OR REPLACE VIEW products_catalogs AS
+    -> SELECT
+    -> p.name AS product,
+    -> c.name AS catalog
+    -> FROM
+    -> products AS p
+    -> JOIN
+    -> catalogs AS c
+    -> ON
+    -> p.catalog_id = c.id;
+Query OK, 0 rows affected (0.02 sec)
+
+
+
+
+Задание 3.
+
+Пусть имеется таблица с календарным полем created_at.
+В ней размещены разреженые календарные записи за август 2018 года '2018-08-01', '2018-08-04', 
+'2018-08-16' и 2018-08-17. Составьте запрос, который выводит полный список дат за август, 
+выставляя в соседнем поле значение 1, если дата присутствует в исходном таблице и 0, если она отсутствует.
+
+Тут тоже получилось, но не везде(((
+----------------------------------------------------------------------------------------------
+
+mysql> CREATE TABLE IF NOT EXISTS posts (
+    -> id SERIAL PRIMARY KEY,
+    -> name VARCHAR(255),
+    -> created_at DATE NOT NULL
+    -> );
+Query OK, 0 rows affected (0.38 sec)
+
+mysql> INSERT INTO posts VALUES
+    -> (NULL, 'первая запись', '2018-08-01'),
+    -> (NULL, 'вторая запись', '2018-08-04'),
+    -> (NULL, 'третья запись', '2018-08-16'),
+    -> (NULL, 'четвертая запись', '2018-08-17');
+ERROR 1366 (HY000): Incorrect string value: '\xD0\xBF\xD0\xB5\xD1\x80...' for column 'name' at row 1
+
+mysql> CREATE TEMPORARY TABLE last_days (
+    -> day INT
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO last_days VALUES
+    -> (0), (1), (2), (3), (4), (5), (6), (7), (8), (9), (10),
+    -> (15), ((11), (12), (13), (14), (15), (16), (17), (18), (19), (20),
+    -> 23), (24),(21), (22), (23), (24), (25), (26), (27), (28), (29), (30);
+Query OK, 31 rows affected (0.00 sec)
+Records: 31  Duplicates: 0  Warnings: 0
+
+mysql> SELECT
+    -> DATE(DATE(2018-08-31) - INTERVAL l.day DAY) AS day,
+    -> NOT ISNULL(p.name) AS order_exist
+    -> FROM
+    -> last_days AS l
+    -> LEFT JOIN
+    -> posts AS p
+    -> ON
+    -> DATE(DATE(2018-08-31) - INTERVAL l.day DAY) = p.created_at
+    -> ORDER BY
+    -> day;
++------+-------------+
+| day  | order_exist |
++------+-------------+
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
+| NULL |           0 |
++------+-------------+
+31 rows in set, 31 warnings (0.01 sec)
+
+
+
+Задание 4.
+
+Пусть имеется любая таблица с календарным полем created_at. 
+Создайте запрос, который удаляет устаревшие записи из таблицы, оставляя только 
+5 самых свежих записей.
+
+Тоже не везде получиось выполнить к моему большому сожалению(
+----------------------------------------------------------------------------------------------
+
+mysql> DROP TABLE IF EXISTS posts;
+
+mysql> CREATE TABLE IF NOT EXISTS posts (
+    -> id SERIAL PRIMARY KEY,
+    -> name VARCHAR(255),
+    -> created_at DATE NOT NULL
+    -> );
+Query OK, 0 rows affected (0.23 sec)
+
+mysql> INSERT INTO posts VALUES
+    -> (NULL, 'первая запись', '2018-11-01'),
+    -> (NULL, 'вторая запись', '2018-11-02'),
+    -> (NULL, 'третья запись', '2018-11-03'),
+    -> (NULL, 'четвертая запись', '2018-11-04'),
+    -> (NULL, 'пятая запись', '2018-11-05'),
+    -> (NULL, 'шестая запись', '2018-11-06'),
+    -> (NULL, 'седьмая запись', '2018-11-07'),
+    -> (NULL, 'восьмая запись', '2018-11-08'),
+    -> (NULL, 'девятая запись', '2018-11-09'),
+    -> (NULL, 'десятая запись', '2018-11-10');
+ERROR 1366 (HY000): Incorrect string value: '\xD0\xBF\xD0\xB5\xD1\x80...' for column 'name' at row 1
+
+mysql> DELETE
+    -> posts
+    -> FROM
+    ->  posts
+    -> JOIN
+    -> (SELECT
+    -> created_at
+    -> FROM
+    -> posts
+    -> ORDER BY
+    -> created_at DESC
+    -> LIMIT 5, 1) AS delpst
+    -> ON
+    -> posts.created_at <= delpst.created_at;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM posts;
+Empty set (0.00 sec)
+
+
+
+Практическое задание по теме “Хранимые процедуры и функции, триггеры".
+
+Задание 1.
+
+Создайте хранимую функцию hello(), которая будет возвращать приветствие, в зависимости от 
+текущего времени суток. С 6:00 до 12:00 функция должна возвращать фразу "Доброе утро", с 12:00 до 
+18:00 функция должна возвращать фразу "Добрый день", с 18:00 до 00:00 — "Добрый вечер", 
+с 00:00 до 6:00 — "Доброй ночи".
+------------------------------------------------------------------------------------------------------
+
+mysql> USE vk;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> DROP FUNCTION IF EXISTS hello;
+Query OK, 0 rows affected, 1 warning (0.02 sec)
+
+mysql> DELIMITER //
+mysql> CREATE FUNCTION hello ()
+    -> RETURNS TINYTEXT NO SQL
+    -> BEGIN
+    -> DECLARE hour INT;
+    -> SET hour = HOUR(NOW());
+    -> CASE
+    -> WHEN hour BETWEEN 0 AND 5 THEN
+    -> RETURN "Доброй ночи";
+    -> WHEN hour BETWEEN 6 AND 11 THEN
+    -> RETURN "Доброе утро";
+    -> WHEN hour BETWEEN 12 AND 17 THEN
+    -> RETURN "Добрый день";
+    -> WHEN hour BETWEEN 18 AND 23 THEN
+    -> RETURN "Добрый вечер";
+    -> END CASE;
+    -> END//
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> DELIMITER ;
+mysql> SELECT NOW(), hello ();
++---------------------+-----------------------+
+| NOW()               | hello ()              |
++---------------------+-----------------------+
+| 2020-09-17 01:39:15 | Доброй ночи           |
++---------------------+-----------------------+
+1 row in set (0.11 sec)
+
+
+
+Задание 2.
+
+В таблице products есть два текстовых поля: name с названием товара и
+description с его описанием. Допустимо присутствие обоих полей или одного из них.
+Ситуация, когда оба поля принимают неопределенное значение NULL неприемлема. 
+Используя триггеры, добейтесь того, чтобы одно из этих полей или оба поля были заполнены.
+При попытке присвоить полям NULL-значение необходимо отменить операцию.
+-----------------------------------------------------------------------------------------
+
+mysql> USE shop
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> CREATE TRIGGER validate_name_description_insert BEFORE INSERT ON products
+    -> FOR EACH ROW BEGIN
+    -> IF NEW.name IS NULL AND NEW.description IS NULL THEN
+    -> SIGNAL SQLSTATE '45000'
+    -> SET MESSAGE_TEXT = 'Both name and description are NULL';
+    -> END IF;
+    -> END//
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> INSERT INTO products
+    -> (name, description, price, catalog_id)
+    -> VALUES
+    -> (NULL, NULL, 9360.00, 2)//
+ERROR 1644 (45000): Both name and description are NULL
+
+mysql> INSERT INTO products
+    -> (name, description, price,   (name, description, price, catalog_id)
+    -> VALUES
+    -> ('AMD FX-8320E', 'Процессор для настольных ПК', 4780.00, 1)//
+Query OK, 1 row affected (0.07 sec)
+
+mysql> INSERT INTO products
+    -> (name, description, price, catalog_id)
+    -> VALUES 
+    -> ('Intel Core i3-8100', 'Процессор для настольных ПК ', 7890.00, 1)//
+Query OK, 1 row affected (0.07 sec)g_id)
+
+mysql> CREATE TRIGGER validate_name_description_update BEFORE UPDATE ON products
+    -> FOR EACH ROW BEGIN
+    -> IF NEW.name IS NULL AND NEW.description IS NULL THEN
+    -> SIGNAL SQLSTATE '45000'
+    -> SET MESSAGE_TEXT = 'Both name and description are NULL';
+    -> END IF;
+    -> END//
+Query OK, 0 rows affected (0.12 sec)
+
+
+
+Задание 3. 
+
+Напишите хранимую функцию для вычисления произвольного числа Фибоначчи. 
+Числами Фибоначчи называется последовательность в которой число равно сумме двух предыдущих чисел.
+Вызов функции FIBONACCI(10) должен возвращать число 55.
+--------------------------------------------------------------------------------------------------
+
+mysql> DELIMITER //
+mysql> CREATE FUNCTION FIBONACCI(num INT)
+    -> RETURNS INT DETERMINISTIC
+    -> BEGIN
+    -> DECLARE fs DOUBLE
+    -> SET fs = SQRT(5);
+    -> RETURN (POW((1 + fs) / 2.0, num) + POW((1 - fs) / 2.0, num)) / fs;
+    -> END//
+
+SELECT FIBONACCI(10)//
++---------------+
+| FIBONACCI(10) |
++---------------+
+|            55 |
++---------------+
+1 row in set (0.00 sec)
