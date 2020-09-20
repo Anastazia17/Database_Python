@@ -1,0 +1,502 @@
+
+
+Доделала д/з по уроку 9.
+______________________________________________________________________________________
+
+Практическое задание по теме “Транзакции, переменные, представления”.
+
+Задание 3.
+
+Пусть имеется таблица с календарным полем created_at.
+В ней размещены разреженые календарные записи за август 2018 года '2018-08-01', 
+'2018-08-04', '2018-08-16' и 2018-08-17. Составьте запрос, который выводит полный список 
+дат за август, выставляя в соседнем поле значение 1, если дата присутствует в исходной 
+таблице и 0, если она отсутствует.
+----------------------------------------------------------------------------------------
+
+USE shop;
+
+CREATE TABLE IF NOT EXISTS posts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  created_at DATE NOT NULL
+);
+
+INSERT INTO posts VALUES
+(NULL, 'first recording', '2018-08-01'),
+(NULL, 'second recording', '2018-08-04'),
+(NULL, 'third recording', '2018-08-16'),
+(NULL, 'fourth recording', '2018-08-17');
+
+CREATE TEMPORARY TABLE last_days (
+  day INT
+);
+
+INSERT INTO last_days VALUES
+(0), (1), (2), (3), (4), (5), (6), (7), (8), (9), (10),
+(11), (12), (13), (14), (15), (16), (17), (18), (19), (20),
+(21), (22), (23), (24), (25), (26), (27), (28), (29), (30);
+
+SELECT
+  DATE(DATE('2018-08-31') - INTERVAL l.day DAY) AS day,
+  NOT ISNULL(p.name) AS order_exist
+FROM
+  last_days AS l
+LEFT JOIN
+  posts AS p
+ON
+  DATE(DATE('2018-08-31') - INTERVAL l.day DAY) = p.created_at
+ORDER BY
+  day;
+
+Результат в Workbench:
+----------------------
+2018-08-01	1
+2018-08-02	0
+2018-08-03	0
+2018-08-04	1
+2018-08-05	0
+2018-08-06	0
+2018-08-07	0
+2018-08-08	0
+2018-08-09	0
+2018-08-10	0
+2018-08-11	0
+2018-08-12	0
+2018-08-13	0
+2018-08-14	0
+2018-08-15	0
+2018-08-16	1
+2018-08-17	1
+2018-08-18	0
+2018-08-19	0
+2018-08-20	0
+2018-08-21	0
+2018-08-22	0
+2018-08-23	0
+2018-08-24	0
+2018-08-25	0
+2018-08-26	0
+2018-08-27	0
+2018-08-28	0
+2018-08-29	0
+2018-08-30	0
+2018-08-31	0
+
+
+
+Задание 4.
+
+Пусть имеется любая таблица с календарным полем created_at. 
+Создайте запрос, который удаляет устаревшие записи из таблицы, оставляя только 5 самых 
+свежих записей.
+--------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS posts;
+CREATE TABLE IF NOT EXISTS posts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  created_at DATE NOT NULL
+);
+
+INSERT INTO posts VALUES
+(NULL, 'first recording', '2018-11-01'),
+(NULL, 'second recording', '2018-11-02'),
+(NULL, 'third recording', '2018-11-03'),
+(NULL, 'fourth recording', '2018-11-04'),
+(NULL, 'fifth recording', '2018-11-05'),
+(NULL, 'sixth recording', '2018-11-06'),
+(NULL, 'seventh recording', '2018-11-07'),
+(NULL, 'eighth recording', '2018-11-08'),
+(NULL, 'ninth recording', '2018-11-09'),
+(NULL, 'tenth recording', '2018-11-10');
+
+DELETE
+  posts
+FROM
+  posts
+JOIN
+  (SELECT
+    created_at
+  FROM
+    posts
+  ORDER BY
+    created_at DESC
+  LIMIT 5, 1) AS delpst
+ON
+  posts.created_at <= delpst.created_at;
+
+SELECT * FROM posts;
++----+-------------------+------------+
+| id | name              | created_at |
++----+-------------------+------------+
+|  6 | sixth recording   | 2018-11-06 |
+|  7 | seventh recording | 2018-11-07 |
+|  8 | eighth recording  | 2018-11-08 |
+|  9 | ninth recording   | 2018-11-09 |
+| 10 | tenth recording   | 2018-11-10 |
++----+-------------------+------------+
+5 rows in set (0.00 sec)
+
+
+
+Практическое задание по теме “Администрирование MySQL”
+(изучается по желанию).
+
+По дополнительному заданию не совсем все получилось выполнить
+(выдавались ошибки в некоторых местах):
+___________________________________________________________________________________
+
+
+Задание 1. 
+
+Создайте двух пользователей которые имеют доступ к базе данных shop.
+Первому пользователю shop_read должны быть доступны только запросы на чтение данных,
+второму пользователю shop — любые операции в пределах базы данных shop.
+------------------------------------------------------------------------------------
+
+CREATE USER 'shop_read'@'localhost';
+GRANT SELECT, SHOW VIEW ON shop.* TO 'shop_read'@'localhost' IDENTIFIED BY '';
+
+SHOW DATABASES;
+USE shop;
+SHOW TABLES;
+SELECT * FROM catalogs;
+INSERT INTO catalogs (name) VALUES ('Оперативная память');
+
+CREATE USER 'shop'@'localhost';
+GRANT ALL ON shop.* TO 'shop'@'localhost' IDENTIFIED BY '';
+
+
+Результат в Workbench (ошибка на первом шаге):
+----------------------------------------------
+
+#	Time	Action	Message	Duration / Fetch
+1	15:21:02	CREATE USER 'shop_read'@'localhost'	Error Code: 1819. Your password does not satisfy the current policy requirements	0.015 sec
+
+
+
+Задание 2. 
+
+(по желанию) Пусть имеется таблица accounts содержащая три столбца id, name, password,
+содержащие первичный ключ, имя пользователя и его пароль. Создайте представление
+username таблицы accounts, предоставляющее доступ к столбцам id и name. Создайте
+пользователя user_read, который бы не имел доступа к таблице accounts, однако, мог бы
+извлекать записи из представления username.
+--------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS accounts;
+CREATE TABLE accounts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  password VARCHAR(255)
+);
+
+INSERT INTO accounts (name, password) VALUES
+  ('Gennadiy', 'Qt3X08VetW'),
+  ('Natalya', 'hvg0b057Br'),
+  ('Alexandr', 'a4YGUJjRLk'),
+  ('Sergey', 'YYug1IeyWl'),
+  ('Ivan', 'oKoo7KXvTE'),
+  ('Mariya', 'w5r4yvfo9f');
+
+CREATE VIEW username AS SELECT id, name FROM accounts;
+
+SELECT * FROM username;
+
+CREATE USER 'user_read'@'localhost';
+GRANT SELECT (id, name) ON shop.username TO 'user_read'@'localhost';
+
+
+Результат в Workbench (ошибка на последнем шаге):
+-------------------------------------------------
+
+#	Time	Action	Message	Duration / Fetch
+1	15:15:06	DROP TABLE IF EXISTS accounts	0 row(s) affected	0.171 sec
+2	15:15:06	CREATE TABLE accounts (
+   id SERIAL PRIMARY KEY,
+   name VARCHAR(255),
+   password VARCHAR(255)
+ )	0 row(s) affected	0.563 sec
+3	15:15:06	INSERT INTO accounts (name, password) VALUES
+   ('Gennadiy', 'Qt3X08VetW'),
+   ('Natalya', 'hvg0b057Br'),
+   ('Alexandr', 'a4YGUJjRLk'),
+   ('Sergey', 'YYug1IeyWl'),
+   ('Ivan', 'oKoo7KXvTE'),
+   ('Mariya', 'w5r4yvfo9f')	6 row(s) affected
+ Records: 6  Duplicates: 0  Warnings: 0	0.031 sec
+4	15:15:07	CREATE VIEW username AS SELECT id, name FROM accounts	Error Code: 1050. Table 'username' already exists	0.000 sec
+
+
+
+Д/з к 10 уроку.
+______________________________________________________________________________________
+
+Задание 1.
+
+Проанализировать какие запросы могут выполняться наиболее часто в процессе работы 
+приложения и добавить необходимые индексы.
+--------------------------------------------------------------------------------------
+
+USE vk;
+
+SELECT * FROM users LIMIT 20;
++-----+------------+-------------+----------------------------------+----------------------+---------------------+---------------------+
+| id  | first_name | last_name   | email                            | phone                | created_at          | updated_at          |
++-----+------------+-------------+----------------------------------+----------------------+---------------------+---------------------+
+|   1 | Creola     | Baumbach    | maverick.herman@example.org      | 502.452.1568x3993    | 1990-05-03 03:10:05 | 2017-04-19 13:19:43 |
+|   2 | Dangelo    | Kozey       | edwardo.mayer@example.com        | (435)644-4646        | 1993-09-12 10:12:41 | 2020-08-26 22:41:06 |
+|   3 | Marcia     | Spinka      | berge.keshawn@example.org        | 1-188-773-2847x7823  | 1978-12-15 20:06:38 | 2013-05-07 01:08:52 |
+|   4 | Stan       | Fay         | syble.erdman@example.com         | 06740833022          | 2000-09-06 11:09:16 | 2020-08-26 22:41:06 |
+|   5 | Luis       | Kling       | jacklyn.prohaska@example.com     | (647)920-8985        | 2017-08-18 07:04:18 | 2020-08-26 22:41:06 |
+|   6 | Charity    | Torp        | abbey.fritsch@example.org        | +73(7)0049791534     | 2004-07-06 15:04:44 | 2020-08-26 22:41:06 |
+|   7 | Dariana    | Heathcote   | bertha86@example.net             | 1-612-342-2165       | 1999-04-13 10:18:01 | 2011-11-07 06:14:06 |
+|   8 | Jayda      | Stoltenberg | webster.skiles@example.org       | 1-613-899-6321       | 1977-09-11 04:40:25 | 2005-05-09 04:41:31 |
+|   9 | Alda       | Hackett     | woodrow81@example.com            | 677-320-0823x12195   | 1986-11-04 06:49:48 | 1995-02-27 16:48:57 |
+|  10 | Orie       | Schumm      | sschimmel@example.org            | +03(4)7974869369     | 1980-09-09 18:06:49 | 2020-08-26 22:41:06 |
+|  11 | Jovany     | Luettgen    | jacobs.jeanne@example.org        | (223)295-8510x976    | 1995-06-09 00:18:59 | 2020-08-26 22:41:06 |
+|  12 | Mike       | Ferry       | schaden.carolina@example.org     | 434-110-3776x230     | 2009-12-10 11:59:39 | 2020-08-26 22:41:06 |
+|  13 | Alicia     | Greenfelder | yaufderhar@example.org           | +91(0)6978910726     | 1985-08-16 06:47:51 | 2020-08-26 22:41:06 |
+|  14 | Modesta    | Marvin      | aratke@example.net               | 587.772.6939         | 1995-01-08 21:41:39 | 2020-08-26 22:41:06 |
+|  15 | Glennie    | Wyman       | pdooley@example.com              | 509.792.1947x778     | 1970-07-22 13:27:05 | 1979-06-21 05:46:20 |
+|  16 | Adah       | Streich     | powlowski.teagan@example.net     | 322-853-9441x241     | 1980-08-13 18:23:24 | 2020-08-26 22:41:06 |
+|  17 | Cordie     | Von         | cleffler@example.org             | (893)986-0601        | 2015-05-28 13:51:50 | 2020-08-26 22:41:06 |
+|  18 | Alice      | Cormier     | suzanne42@example.org            | 381-228-1437x0187    | 1989-02-07 10:07:58 | 2020-08-26 22:41:06 |
+|  19 | Branson    | Bogan       | dedrick.steuber@example.org      | 902-716-7586x2801    | 2019-09-24 00:51:52 | 2020-08-26 22:41:06 |
+|  20 | Janis      | Kulas       | henriette.howell@example.com     | 808.616.8987         | 1978-02-02 00:06:47 | 2019-02-26 01:34:39 |
++-----+------------+-------------+----------------------------------+----------------------+---------------------+---------------------+
+
+SELECT id, first_name, last_name 
+  FROM users 
+    WHERE phone = '+91(0)6978910726';
++----+------------+-------------+
+| id | first_name | last_name   |
++----+------------+-------------+
+| 13 | Alicia     | Greenfelder |
++----+------------+-------------+
+1 row in set (0.00 sec)
+
+CREATE UNIQUE INDEX users_phone_uq ON users(phone);
+Query OK, 0 rows affected (0.25 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+SELECT id, first_name, last_name 
+  FROM users 
+    WHERE email = 'berge.keshawn@example.org';
++----+------------+-----------+
+| id | first_name | last_name |
++----+------------+-----------+
+|  3 | Marcia     | Spinka    |
++----+------------+-----------+
+1 row in set (0.01 sec)
+
+CREATE UNIQUE INDEX users_email_uq ON users(email);
+Query OK, 0 rows affected (0.27 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+SELECT * FROM profiles LIMIT 20;
++---------+--------+------------+----------+----------------------+--------------------+---------------------+---------------------+-----------+
+| user_id | gender | birthday   | photo_id | city                 | country            | created_at          | updated_at          | region_id |
++---------+--------+------------+----------+----------------------+--------------------+---------------------+---------------------+-----------+
+|       1 | m      | 1974-02-25 |       73 | Port Sydneytown      | Germany            | 2010-11-22 22:21:42 | 2020-08-26 22:43:13 |      NULL |
+|       2 | m      | 1976-12-05 |       70 | Schmelerville        | Belarus            | 2013-10-15 01:10:08 | 2020-08-26 22:43:13 |      NULL |
+|       3 | f      | 1985-09-11 |       33 | Theaville            | Belarus            | 2019-01-09 11:43:01 | 2020-08-26 22:43:13 |      NULL |
+|       4 | f      | 1988-04-22 |       54 | North Ilaside        | Belarus            | 2014-09-09 09:39:22 | 2020-08-26 22:43:13 |      NULL |
+|       5 | m      | 1990-02-02 |       70 | Morissetteside       | Russian Federation | 2017-11-10 23:11:06 | 2020-08-26 22:43:13 |      NULL |
+|       6 | f      | 1978-03-21 |       86 | South Trace          | Germany            | 2015-07-14 19:26:35 | 2020-08-26 22:43:13 |      NULL |
+|       7 | m      | 1984-11-20 |       22 | Heidenreichview      | Russian Federation | 2012-07-23 02:38:34 | 2020-08-26 22:43:13 |      NULL |
+|       8 | m      | 1982-02-19 |       51 | Blickborough         | Russian Federation | 2012-09-21 21:06:15 | 2020-08-26 22:43:13 |      NULL |
+|       9 | m      | 1994-07-22 |       88 | Tremaynemouth        | Russian Federation | 2020-07-12 23:43:10 | 2020-08-26 22:43:13 |      NULL |
+|      10 | m      | 2004-06-06 |       87 | South Xzavier        | Belarus            | 2018-05-21 23:45:08 | 2020-08-26 22:43:13 |      NULL |
+|      11 | m      | 1977-04-23 |       72 | Rashawnmouth         | Belarus            | 2010-08-23 03:45:41 | 2020-08-26 22:43:13 |      NULL |
+|      12 | f      | 1988-04-26 |       97 | Lake Lewhaven        | Russian Federation | 2018-01-22 18:27:08 | 2020-08-26 22:43:13 |      NULL |
+|      13 | m      | 2005-06-16 |       67 | Larkinhaven          | Russian Federation | 2011-03-12 01:59:42 | 2020-08-26 22:43:13 |      NULL |
+|      14 | f      | 1986-11-11 |       45 | Lake Jimmie          | Germany            | 2019-02-08 12:33:53 | 2020-08-26 22:43:13 |      NULL |
+|      15 | m      | 1971-03-05 |       24 | Franeckimouth        | Germany            | 2011-04-11 22:36:43 | 2020-08-26 22:43:13 |      NULL |
+|      16 | m      | 2014-03-09 |       84 | Ryanbury             | Russian Federation | 2012-04-14 05:02:14 | 2020-08-26 22:43:13 |      NULL |
+|      17 | m      | 2000-11-30 |       46 | Simonisstad          | Russian Federation | 2019-10-03 22:42:54 | 2020-08-26 22:43:13 |      NULL |
+|      18 | f      | 1991-08-18 |       77 | South Chelseyborough | Germany            | 2016-09-04 02:55:44 | 2020-08-26 22:43:13 |      NULL |
+|      19 | f      | 1987-10-08 |       45 | East Letaside        | Belarus            | 2018-10-05 15:19:51 | 2020-08-26 22:43:13 |      NULL |
+|      20 | f      | 1994-08-10 |       97 | Omerfurt             | Russian Federation | 2018-01-12 02:43:58 | 2020-08-26 22:43:13 |      NULL |
++---------+--------+------------+----------+----------------------+--------------------+---------------------+---------------------+-----------+
+20 rows in set (0.01 sec)
+
+SELECT user_id, city, birthday 
+  FROM profiles
+    WHERE country = 'Germany';
++---------+----------------------+------------+
+| user_id | city                 | birthday   |
++---------+----------------------+------------+
+|       1 | Port Sydneytown      | 1974-02-25 |
+|       6 | South Trace          | 1978-03-21 |
+|      14 | Lake Jimmie          | 1986-11-11 |
+|      15 | Franeckimouth        | 1971-03-05 |
+|      18 | South Chelseyborough | 1991-08-18 |
+|      21 | Mertzfurt            | 1974-11-22 |
+|      23 | North Tremainetown   | 1970-09-25 |
+|      24 | Wilfredtown          | 1998-04-29 |
+|      25 | Gretchenborough      | 1988-11-02 |
+|      36 | Lake Mireyahaven     | 2003-05-30 |
+|      37 | Lake Audieshire      | 2009-06-02 |
+|      38 | Port Felix           | 1990-06-09 |
+|      39 | New Victor           | 1978-06-13 |
+|      40 | Lake Fleta           | 1975-11-07 |
+|      44 | West Aurore          | 1989-08-11 |
+|      47 | East Vida            | 1982-12-19 |
+|      48 | Schuppeview          | 2014-07-17 |
+|      49 | North Christian      | 1974-10-26 |
+|      53 | New Emeryshire       | 2013-08-15 |
+|      55 | New Velvastad        | 1970-04-27 |
+|      59 | Cristopherland       | 1986-02-16 |
+|      60 | Port Wilmer          | 1982-07-07 |
+|      62 | East Jamey           | 1985-02-15 |
+|      64 | Mozelletown          | 1970-08-05 |
+|      68 | Keelychester         | 2015-04-08 |
+|      70 | South Alessiamouth   | 1985-03-30 |
+|      71 | Port Chaddburgh      | 2016-09-10 |
+|      74 | Kaneberg             | 2014-11-18 |
+|      75 | Port Fannyhaven      | 2007-08-13 |
+|      76 | South Ardith         | 2016-01-29 |
+|      81 | New May              | 1984-12-01 |
+|      82 | Lake Isaias          | 1975-03-05 |
+|      85 | Edwardmouth          | 2016-04-06 |
+|      91 | Berrymouth           | 1977-01-24 |
+|      93 | East Shyann          | 1970-05-10 |
+|      95 | Dareborough          | 1994-03-24 |
+|      97 | New Rashawnside      | 2008-12-12 |
+|      99 | Swiftberg            | 1986-10-25 |
++---------+----------------------+------------+
+38 rows in set (0.02 sec)
+    
+CREATE INDEX profiles_country_idx ON profiles(country);
+Query OK, 0 rows affected (0.26 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+SELECT user_id, birthday 
+  FROM profiles
+    WHERE city = 'Theaville';
++---------+------------+
+| user_id | birthday   |
++---------+------------+
+|       3 | 1985-09-11 |
++---------+------------+
+1 row in set (0.00 sec)
+
+CREATE INDEX profiles_city_idx ON profiles(city);
+Query OK, 0 rows affected (0.24 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+SELECT user_id, gender, country, city 
+  FROM profiles
+    WHERE birthday = '1991-08-18';
++---------+--------+---------+----------------------+
+| user_id | gender | country | city                 |
++---------+--------+---------+----------------------+
+|      18 | f      | Germany | South Chelseyborough |
++---------+--------+---------+----------------------+
+1 row in set (0.00 sec)
+
+CREATE INDEX profiles_birthday_idx ON profiles(birthday);
+Query OK, 0 rows affected (0.20 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+
+
+Задание 2.
+Задание на оконные функции.
+Построить запрос, который будет выводить следующие столбцы:
+- имя группы;
+- среднее количество пользователей в группах;
+- самый молодой пользователь в группе;
+- самый старший пользователь в группе;
+- общее количество пользователей в группе;
+- всего пользователей в системе;
+- отношение в процентах 
+(общее количество пользователей в группе / всего пользователей в системе) * 100.
+--------------------------------------------------------------------------------
+
+К сожалению, моя версия сервера MySQL устарела, в ней еще не были реализованы
+оконные функции, поэтому пишу Вам код, как я его вижу, проверить не могу
+финальный вариант:
+--------------------------------------------------------------------------------
+
+select version();
++-------------------------+
+| version()               |
++-------------------------+
+| 5.7.31-0ubuntu0.16.04.1 |
++-------------------------+
+1 row in set (0.00 sec)
+
+
+Для начала решение по нескольким строкам из задания 
+традиционным способом (для своей проверки):
+-----------------------------------------------------------
+
+SELECT communities.name, 
+  SUM(communities_users.community_id) AS total_by_group,
+  (SELECT SUM(community_id) FROM communities_users) AS total_id_group,
+  SUM(communities_users.community_id)/(SELECT SUM(community_id) FROM communities_users) * 100 AS "%%" 
+    FROM communities_users
+      JOIN communities
+        ON  communities_users.community_id = communities.id
+    GROUP BY communities_users.community_id;
++-------------+----------------+----------------+---------+
+| name        | total_by_group | total_id_group | %%      |
++-------------+----------------+----------------+---------+
+| totam       |              4 |           1061 |  0.3770 |
+| accusantium |             12 |           1061 |  1.1310 |
+| facilis     |              9 |           1061 |  0.8483 |
+| suscipit    |             20 |           1061 |  1.8850 |
+| minus       |             20 |           1061 |  1.8850 |
+| qui         |              6 |           1061 |  0.5655 |
+| eligendi    |             28 |           1061 |  2.6390 |
+| vel         |             64 |           1061 |  6.0320 |
+| cupiditate  |             63 |           1061 |  5.9378 |
+| at          |             60 |           1061 |  5.6550 |
+| corrupti    |             55 |           1061 |  5.1838 |
+| a           |             96 |           1061 |  9.0481 |
+| alias       |            117 |           1061 | 11.0273 |
+| et          |             84 |           1061 |  7.9171 |
+| molestiae   |             45 |           1061 |  4.2413 |
+| aut         |             48 |           1061 |  4.5240 |
+| voluptatem  |             51 |           1061 |  4.8068 |
+| aliquam     |            144 |           1061 | 13.5721 |
+| velit       |             95 |           1061 |  8.9538 |
+| voluptates  |             40 |           1061 |  3.7700 |
++-------------+----------------+----------------+---------+
+20 rows in set (0.01 sec)
+
+
+Реализация используя агрегатные функции как оконные
+(проверить работоспособность не могу):
+-----------------------------------------------------------
+
+SELECT DISTINCT communities.name, 
+  SUM(communities_users.community_id) OVER(PARTITION BY communities.id) AS total_by_group,
+  SUM(communities_users.community_id) OVER() AS total_id_group,
+  SUM(communities_users.community_id) OVER(PARTITION BY communities.id / SUM(communities_users.community_id) OVER() * 100 AS "%%"
+    FROM communities_users
+      JOIN communities
+        ON  communities_users.community_id = communities.id;
+
+
+Теперь финальный вариант кода с применением оконных функций
+(проверить работоспособность не могу):
+-----------------------------------------------------------
+
+SELECT DISTINCT communities.name, 
+  AVG(communities_users.community_id) OVER(PARTITION BY communities.id) AS average,
+  MIN(communities_users.community_id) OVER(PARTITION BY communities.id) AS min,
+  MAX(communities_users.community_id) OVER(PARTITION BY communities.id) AS max,
+  SUM(communities_users.community_id) OVER(PARTITION BY communities.id) AS total_by_group,
+  SUM(communities_users.community_id) OVER() AS total_id_group,
+  SUM(communities_users.community_id) OVER(PARTITION BY communities.id / SUM(communities_users.community_id) OVER() * 100 AS "%%"
+    FROM communities_users
+      JOIN communities
+        ON  communities_users.community_id = communities.id;
