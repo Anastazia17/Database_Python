@@ -1,0 +1,360 @@
+
+Д/з по уроку 11.
+______________________________________________________________________________________
+
+Практическое задание тема "Оптимизация запросов".
+
+Задание 1.
+
+Создайте таблицу logs типа Archive. Пусть при каждом создании записи в таблицах users,
+catalogs и products в таблицу logs помещается время и дата создания записи, название
+таблицы, идентификатор первичного ключа и содержимое поля name.
+----------------------------------------------------------------------------------------
+
+mysql> USE shop;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+mysql> CREATE TABLE Logs (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    created_at datetime DEFAULT CURRENT_TIMESTAMP,
+    table_name varchar(50) NOT NULL,
+    row_id INT UNSIGNED NOT NULL,
+    row_name varchar(255)
+) ENGINE = Archive;
+Query OK, 0 rows affected (0.15 sec)
+
+
+По коду далее моя версия SQL-сервера не соответствует синтаксису:
+-----------------------------------------------------------------
+
+mysql> CREATE TRIGGER products_insert AFTER INSERT ON products
+FOR EACH ROW
+BEGIN
+    INSERT INTO Logs VALUES (NULL, DEFAULT, "products", NEW.id, NEW.name);
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near '' at line 4
+END;
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near 'END' at line 1
+
+
+mysql> CREATE TRIGGER users_insert AFTER INSERT ON users
+FOR EACH ROW
+BEGIN
+    INSERT INTO Logs VALUES (NULL, DEFAULT, "users", NEW.id, NEW.name);
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near '' at line 4
+END;
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near 'END' at line 1
+
+
+mysql> CREATE TRIGGER catalogs_insert AFTER INSERT ON catalogs
+FOR EACH ROW
+BEGIN
+    INSERT INTO Logs VALUES (NULL, DEFAULT, "catalogs", NEW.id, NEW.name);
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near '' at line 4
+END;
+ERROR 1064 (42000): You have an error in your SQL syntax; 
+check the manual that corresponds to your MySQL server version 
+for the right syntax to use near 'END' at line 1
+
+
+
+Задание 2.
+
+(по желанию) Создайте SQL-запрос, который помещает в таблицу users миллион записей.
+-----------------------------------------------------------------------------------
+
+mysql> CREATE TABLE samples (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) COMMENT 'Имя покупателя',
+  birthday_at DATE COMMENT 'Дата рождения',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Покупатели';
+Query OK, 0 rows affected (0.61 sec)
+
+mysql> INSERT INTO samples (name, birthday_at) VALUES
+  ('Gennadiy', '1990-10-05'),
+  ('Natalya', '1984-11-12'),
+  ('Alexandr', '1985-05-20'),
+  ('Sergey', '1988-02-14'),
+  ('Ivan', '1998-01-12'),
+  ('Mariya', '1992-08-29'),
+  ('Arkadiy', '1994-03-17'),
+  ('Olga', '1981-07-10'),
+  ('Vladimir', '1988-06-12'),
+  ('Ekaterina', '1992-09-20');
+Query OK, 10 rows affected (0.03 sec)
+Records: 10  Duplicates: 0  Warnings: 0
+
+mysql> SELECT
+  COUNT(*)
+FROM
+  samples AS fst,
+  samples AS snd,
+  samples AS thd,
+  samples AS fth,
+  samples AS fif,
+  samples AS sth;
++----------+
+| COUNT(*) |
++----------+
+|  1000000 |
++----------+
+1 row in set (0.21 sec)
+
+mysql> SELECT COUNT(*) FROM users;
++----------+
+| COUNT(*) |
++----------+
+|        6 |
++----------+
+1 row in set (0.00 sec)
+
+mysql> SELECT * FROM users LIMIT 10;
++----+--------------------+-------------+---------------------+---------------------+
+| id | name               | birthday_at | created_at          | updated_at          |
++----+--------------------+-------------+---------------------+---------------------+
+|  1 | Геннадий           | 1990-10-05  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  2 | Наталья            | 1984-11-12  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  3 | Александр          | 1985-05-20  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  4 | Сергей             | 1988-02-14  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  5 | Иван               | 1998-01-12  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
+|  6 | Мария              | 2006-08-29  | 2019-03-25 20:21:11 | 2019-03-25 20:21:11 |
++----+--------------------+-------------+---------------------+---------------------+
+6 rows in set (0.00 sec)
+
+
+________________________________________________________________________________________
+-- Практическое задание тема "NoSQL"/
+
+Задание 1. 
+
+В базе данных Redis подберите коллекцию для подсчета посещений с определенных IP-адресов.
+----------------------------------------------------------------------------------------
+
+Установка пакета Redis:
+-----------------------
+
+anastazia@anastazia-VirtualBox:~$ redis-cli
+Программа 'redis-cli' на данный момент не установлена. Вы можете установить её, выполнив:
+sudo apt install redis-tools
+anastazia@anastazia-VirtualBox:~$ sudo apt install redis-tools
+[sudo] пароль для anastazia:
+Чтение списков пакетов… Готово
+Построение дерева зависимостей
+Чтение информации о состоянии… Готово
+Будут установлены следующие дополнительные пакеты:
+  libjemalloc1 libnss3
+Предлагаемые пакеты:
+  ruby-redis
+Следующие НОВЫЕ пакеты будут установлены:
+  libjemalloc1 redis-tools
+Следующие пакеты будут обновлены:
+  libnss3
+Обновлено 1 пакетов, установлено 2 новых пакетов, для удаления отмечено 0 пакетов, и 276 пакетов не обновлено.
+Установлено или удалено не до конца 15 пакетов.
+Необходимо скачать 184 kB/1 494 kB архивов.
+После данной операции объём занятого дискового пространства возрастёт на 801 kB.
+Хотите продолжить? [Д/н] y
+Пол:1 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libjemalloc1 i386 3.6.0-9ubuntu1 [81,8 kB]
+Пол:2 http://ru.archive.ubuntu.com/ubuntu xenial-updates/universe i386 redis-tools i386 2:3.0.6-1ubuntu0.4 [102 kB]
+Получено 184 kB за 0с (481 kB/s)
+(Чтение базы данных … на данный момент установлено 188845 файлов и каталогов.)
+Подготовка к распаковке …/libnss3_2%3a3.28.4-0ubuntu0.16.04.14_i386.deb …
+Распаковывается libnss3:i386 (2:3.28.4-0ubuntu0.16.04.14) на замену (2:3.28.4-0ubuntu0.16.04.4) …
+Выбор ранее не выбранного пакета libjemalloc1.
+Подготовка к распаковке …/libjemalloc1_3.6.0-9ubuntu1_i386.deb …
+Распаковывается libjemalloc1 (3.6.0-9ubuntu1) …
+Выбор ранее не выбранного пакета redis-tools.
+Подготовка к распаковке …/redis-tools_2%3a3.0.6-1ubuntu0.4_i386.deb …
+Распаковывается redis-tools (2:3.0.6-1ubuntu0.4) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11.2) …
+Обрабатываются триггеры для man-db (2.7.5-1) …
+Настраивается пакет libjemalloc1 (3.6.0-9ubuntu1) …
+Настраивается пакет redis-tools (2:3.0.6-1ubuntu0.4) …
+Настраивается пакет libnss3-nssdb (2:3.28.4-0ubuntu0.16.04.14) …
+Настраивается пакет libnss3:i386 (2:3.28.4-0ubuntu0.16.04.14) …
+Настраивается пакет libreoffice-core (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-pdfimport (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-avmedia-backend-gstreamer (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-base-core (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-calc (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-draw (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-gtk (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-gnome (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-impress (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-math (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-writer (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет python3-uno (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Настраивается пакет libreoffice-ogltrans (1:5.1.6~rc2-0ubuntu1~xenial10) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11.2) …
+
+
+Не удалось установить соединение:
+---------------------------------
+
+anastazia@anastazia-VirtualBox:~$ redis-cli
+Could not connect to Redis at 127.0.0.1:6379: Connection refused
+not connected>                                                                                                          
+
+
+Так как мне не удалось подключиться к Redis, 
+выполнить сдедующий код тоже не удалось:
+-------------------------------------------
+
+HINCRBY addresses '127.0.0.1' 1
+HGETALL addresses
+
+HINCRBY addresses '127.0.0.2' 1
+HGETALL addresses
+
+HGET addresses '127.0.0.1'
+
+
+
+Задание 3. 
+
+Организуйте хранение категорий и товарных позиций учебной базы данных shop 
+в СУБД MongoDB.
+--------------------------------------------------------------------------
+
+Установка пакета MongoDB:
+-------------------------
+
+anastazia@anastazia-VirtualBox:~$ mongo
+Программа 'mongo' на данный момент не установлена. Вы можете установить её, выполнив:
+sudo apt install mongodb-clients
+anastazia@anastazia-VirtualBox:~$ sudo apt install mongodb-clients
+Чтение списков пакетов… Готово
+Построение дерева зависимостей
+Чтение информации о состоянии… Готово
+Будут установлены следующие дополнительные пакеты:
+  libboost-program-options1.58.0 libboost-thread1.58.0 libgoogle-perftools4 libpcrecpp0v5 libsnappy1v5
+  libtcmalloc-minimal4 libv8-3.14.5 libyaml-cpp0.5v5
+Следующие НОВЫЕ пакеты будут установлены:
+  libboost-program-options1.58.0 libboost-thread1.58.0 libgoogle-perftools4 libpcrecpp0v5 libsnappy1v5
+  libtcmalloc-minimal4 libv8-3.14.5 libyaml-cpp0.5v5 mongodb-clients
+Обновлено 0 пакетов, установлено 9 новых пакетов, для удаления отмечено 0 пакетов, и 276 пакетов не обновлено.
+Необходимо скачать 53,4 MB архивов.
+После данной операции объём занятого дискового пространства возрастёт на 177 MB.
+Хотите продолжить? [Д/н] y
+Пол:1 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libpcrecpp0v5 i386 2:8.38-3.1 [16,0 kB]
+Пол:2 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libboost-program-options1.58.0 i386 1.58.0+dfsg-5ubuntu3.1 [142 kB]
+Пол:3 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libboost-thread1.58.0 i386 1.58.0+dfsg-5ubuntu3.1 [48,9 kB]
+Пол:4 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libtcmalloc-minimal4 i386 2.4-0ubuntu5.16.04.1 [107 kB]
+Пол:5 http://ru.archive.ubuntu.com/ubuntu xenial-updates/main i386 libgoogle-perftools4 i386 2.4-0ubuntu5.16.04.1 [188 kB]
+Пол:6 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 libv8-3.14.5 i386 3.14.5.8-5ubuntu2 [1 192 kB]
+Пол:7 http://ru.archive.ubuntu.com/ubuntu xenial-updates/universe i386 libyaml-cpp0.5v5 i386 0.5.2-4ubuntu1~16.04.4 [165 kB]
+Пол:8 http://ru.archive.ubuntu.com/ubuntu xenial/main i386 libsnappy1v5 i386 1.1.3-2 [17,0 kB]
+Пол:9 http://ru.archive.ubuntu.com/ubuntu xenial/universe i386 mongodb-clients i386 1:2.6.10-0ubuntu1 [51,5 MB]
+Получено 53,4 MB за 10с (5 231 kB/s)
+Выбор ранее не выбранного пакета libpcrecpp0v5:i386.
+(Чтение базы данных … на данный момент установлено 188866 файлов и каталогов.)
+Подготовка к распаковке …/libpcrecpp0v5_2%3a8.38-3.1_i386.deb …
+Распаковывается libpcrecpp0v5:i386 (2:8.38-3.1) …
+Выбор ранее не выбранного пакета libboost-program-options1.58.0:i386.
+Подготовка к распаковке …/libboost-program-options1.58.0_1.58.0+dfsg-5ubuntu3.1_i386.deb …
+Распаковывается libboost-program-options1.58.0:i386 (1.58.0+dfsg-5ubuntu3.1) …
+Выбор ранее не выбранного пакета libboost-thread1.58.0:i386.
+Подготовка к распаковке …/libboost-thread1.58.0_1.58.0+dfsg-5ubuntu3.1_i386.deb …
+Распаковывается libboost-thread1.58.0:i386 (1.58.0+dfsg-5ubuntu3.1) …
+Выбор ранее не выбранного пакета libtcmalloc-minimal4.
+Подготовка к распаковке …/libtcmalloc-minimal4_2.4-0ubuntu5.16.04.1_i386.deb …
+Распаковывается libtcmalloc-minimal4 (2.4-0ubuntu5.16.04.1) …
+Выбор ранее не выбранного пакета libgoogle-perftools4.
+Подготовка к распаковке …/libgoogle-perftools4_2.4-0ubuntu5.16.04.1_i386.deb …
+Распаковывается libgoogle-perftools4 (2.4-0ubuntu5.16.04.1) …
+Выбор ранее не выбранного пакета libv8-3.14.5.
+Подготовка к распаковке …/libv8-3.14.5_3.14.5.8-5ubuntu2_i386.deb …
+Распаковывается libv8-3.14.5 (3.14.5.8-5ubuntu2) …
+Выбор ранее не выбранного пакета libyaml-cpp0.5v5:i386.
+Подготовка к распаковке …/libyaml-cpp0.5v5_0.5.2-4ubuntu1~16.04.4_i386.deb …
+Распаковывается libyaml-cpp0.5v5:i386 (0.5.2-4ubuntu1~16.04.4) …
+Выбор ранее не выбранного пакета libsnappy1v5:i386.
+Подготовка к распаковке …/libsnappy1v5_1.1.3-2_i386.deb …
+Распаковывается libsnappy1v5:i386 (1.1.3-2) …
+Выбор ранее не выбранного пакета mongodb-clients.
+Подготовка к распаковке …/mongodb-clients_1%3a2.6.10-0ubuntu1_i386.deb …
+Распаковывается mongodb-clients (1:2.6.10-0ubuntu1) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11.2) …
+Обрабатываются триггеры для man-db (2.7.5-1) …
+Настраивается пакет libpcrecpp0v5:i386 (2:8.38-3.1) …
+Настраивается пакет libboost-program-options1.58.0:i386 (1.58.0+dfsg-5ubuntu3.1) …
+Настраивается пакет libboost-thread1.58.0:i386 (1.58.0+dfsg-5ubuntu3.1) …
+Настраивается пакет libtcmalloc-minimal4 (2.4-0ubuntu5.16.04.1) …
+Настраивается пакет libgoogle-perftools4 (2.4-0ubuntu5.16.04.1) …
+Настраивается пакет libv8-3.14.5 (3.14.5.8-5ubuntu2) …
+Настраивается пакет libyaml-cpp0.5v5:i386 (0.5.2-4ubuntu1~16.04.4) …
+Настраивается пакет libsnappy1v5:i386 (1.1.3-2) …
+Настраивается пакет mongodb-clients (1:2.6.10-0ubuntu1) …
+Обрабатываются триггеры для libc-bin (2.23-0ubuntu11.2) …
+
+
+Проверка связи (соединение не удалось):
+---------------------------------------
+
+anastazia@anastazia-VirtualBox:~$ mongo
+MongoDB shell version: 2.6.10
+connecting to: test
+2020-09-26T16:37:51.667+0400 warning: Failed to connect to 127.0.0.1:27017, reason: errno:111 Connection refused
+2020-09-26T16:37:51.673+0400 Error: couldn't connect to server 127.0.0.1:27017 (127.0.0.1), connection attempt failed at src/mongo/shell/mongo.js:146
+exception: connect failed
+
+
+Команды далее выполнить не было возможным:
+------------------------------------------
+
+show dbs
+
+use shop
+
+db.createCollection('catalogs')
+db.createCollection('products')
+
+db.catalogs.insert({name: 'Процессоры'})
+db.catalogs.insert({name: 'Мат.платы'})
+db.catalogs.insert({name: 'Видеокарты'})
+
+db.products.insert(
+  {
+    name: 'Intel Core i3-8100',
+    description: 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.',
+    price: 7890.00,
+    catalog_id: new ObjectId("5b56c73f88f700498cbdc56b")
+  }
+);
+
+db.products.insert(
+  {
+    name: 'Intel Core i5-7400',
+    description: 'Процессор для настольных персональных компьютеров, основанных на платформе Intel.',
+    price: 12700.00,
+    catalog_id: new ObjectId("5b56c73f88f700498cbdc56b")
+  }
+);
+
+db.products.insert(
+  {
+    name: 'ASUS ROG MAXIMUS X HERO',
+    description: 'Материнская плата ASUS ROG MAXIMUS X HERO, Z370, Socket 1151-V2, DDR4, ATX',
+    price: 19310.00,
+    catalog_id: new ObjectId("5b56c74788f700498cbdc56c")
+  }
+);
+
+db.products.find()
+
+db.products.find({catalog_id: ObjectId("5b56c73f88f700498cbdc56bdb")})
+
